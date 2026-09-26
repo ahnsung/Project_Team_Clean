@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1af3387c43186c2499cd5bb694d75411, type: 3}
+  m_Name: RaiderMonsterData
+  m_EditorClassIdentifier: 
+  monsterName: Guardian Monster
+  monsterPrefab: {fileID: 5870118318321618872, guid: 6bd3eda527d466d44a81c46f1be4877b, type: 3}
+  maxHP: 20
+  attackPower: 10
+  accuracy: 70
+  evasion: 0
+  attackCutInSprite: {fileID: -8809205275951332157, guid: 1aff4a9b633a15943aefc55dbf27e7f5, type: 3}
+  attackShadowSprite: {fileID: -8500156978023210859, guid: bd9d9556e4a48834196bdc81f83df5b7, type: 3}
+  hitCutInSprite: {fileID: -6152214171472864777, guid: 42af70fac5c26e4419aaf8d32bbae4aa, type: 3}
+  hitShadowSprite: {fileID: -1351648465710776369, guid: 0f3d7339ddee6f34292840868e16d986, type: 3}
+  flipCutInX: 1
+  attackSound: {fileID: 8300000, guid: 91f8e66d4cbe3b448ac34290b99de95e, type: 3}

@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1af3387c43186c2499cd5bb694d75411, type: 3}
+  m_Name: PlagueRatMonsterData
+  m_EditorClassIdentifier: 
+  monsterName: Monster PlagueRat
+  monsterPrefab: {fileID: 5870118318321618872, guid: aa8e945dec2195b4382d7fc550ab7a9f, type: 3}
+  maxHP: 20
+  attackPower: 10
+  accuracy: 70
+  evasion: 0
+  attackCutInSprite: {fileID: -6330187171930426082, guid: 3aa6b64d38f668f4cbf3783c25dfc529, type: 3}
+  attackShadowSprite: {fileID: -2594773592329544666, guid: 2cd80055a8b26d647bdc4cb3b8c26181, type: 3}
+  hitCutInSprite: {fileID: -7809848136824540015, guid: 19432b59bcb763d4aa4ab2df327f6f4b, type: 3}
+  hitShadowSprite: {fileID: -6674109277364804146, guid: 6c8d00220b9d55740851b92bb169f5df, type: 3}
+  flipCutInX: 1
+  attackSound: {fileID: 8300000, guid: f2afcefd48ec9cf46a2515e2f8c3a0f5, type: 3}

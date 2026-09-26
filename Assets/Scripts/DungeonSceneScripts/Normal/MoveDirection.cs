@@ -1,0 +1,9 @@
+// 플레이어가 다음 방으로 이동할 때 사용할 방향 종류
+// 방향 선택 버튼(상, 하, 좌, 우)과 연결해서 사용한다.
+public enum MoveDirection
+{
+    Up,
+    Down,
+    Left,
+    Right
+}

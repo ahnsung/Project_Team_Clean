@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1af3387c43186c2499cd5bb694d75411, type: 3}
+  m_Name: GuardianMonsterData
+  m_EditorClassIdentifier: 
+  monsterName: Guardian Monster
+  monsterPrefab: {fileID: 5870118318321618872, guid: e02309cab339af64cb57c4997fbc39b6, type: 3}
+  maxHP: 20
+  attackPower: 10
+  accuracy: 70
+  evasion: 0
+  attackCutInSprite: {fileID: -3310435162009916611, guid: 6f964419c3c98954aa9bce8a7f1a9b6a, type: 3}
+  attackShadowSprite: {fileID: 2955490251972670169, guid: 3ce2c788ae19e4e4e8f261f31e890d9e, type: 3}
+  hitCutInSprite: {fileID: 21300000, guid: 3d8acc30d84240547b3f01c254fb58c2, type: 3}
+  hitShadowSprite: {fileID: 21300000, guid: 79742bf375f6a0a43ad3691895520965, type: 3}
+  flipCutInX: 1
+  attackSound: {fileID: 8300000, guid: 040d077caae32ee459582e0264644154, type: 3}

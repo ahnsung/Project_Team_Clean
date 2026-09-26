@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1af3387c43186c2499cd5bb694d75411, type: 3}
+  m_Name: DogMonsterData
+  m_EditorClassIdentifier: 
+  monsterName: Dog Monster
+  monsterPrefab: {fileID: 5870118318321618872, guid: 5454762acecebee4ab3c0016ad6fed05, type: 3}
+  maxHP: 20
+  attackPower: 10
+  accuracy: 70
+  evasion: 0
+  attackCutInSprite: {fileID: 21300000, guid: 28ffd7653e00583408770cadf2ac11ed, type: 3}
+  attackShadowSprite: {fileID: 21300000, guid: df4f6ef1c5032fe4d9635f2c73f0d41e, type: 3}
+  hitCutInSprite: {fileID: 4167272671784526789, guid: fa50debe74146e24293424a513d41bc3, type: 3}
+  hitShadowSprite: {fileID: 3485138931716146192, guid: 615b36aadf00ff24ab36b799cee05a02, type: 3}
+  flipCutInX: 0
+  attackCutInScale: 1
+  hitCutInScale: 1
+  attackSound: {fileID: 0}

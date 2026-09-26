@@ -1,0 +1,13 @@
+﻿X,Y,Tile Type,ConnectedTeleportID
+3,33,Teleport,T_1
+13,30,Teleport,T_1
+15,2,Teleport,T_2
+15,4,Teleport,T_2
+19,17,Teleport,T_3
+19,24,Teleport,T_3
+32,31,Teleport,T_4
+36,31,Teleport,T_5
+37,19,Teleport,T_6
+37,39,Teleport,T_4
+41,39,Teleport,T_5
+42,16,Teleport,T_6
