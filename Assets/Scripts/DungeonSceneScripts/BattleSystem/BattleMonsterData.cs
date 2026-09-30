@@ -7,6 +7,9 @@ using UnityEngine;
 public class BattleMonsterData : ScriptableObject
 {
     [Header("Info")]
+    [Tooltip("적 테이블의 Enemy_ID입니다. 패턴 시스템과 연결할 때 사용합니다.")]
+    public int enemyId = 3001;
+
     public string monsterName = "Dog Monster";
 
     [Header("Prefab")]

@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1af3387c43186c2499cd5bb694d75411, type: 3}
   m_Name: GuardianMonsterData
   m_EditorClassIdentifier: 
+  enemyId: 3004
   monsterName: Guardian Monster
   monsterPrefab: {fileID: 5870118318321618872, guid: e02309cab339af64cb57c4997fbc39b6, type: 3}
   maxHP: 20
@@ -23,4 +24,6 @@ MonoBehaviour:
   hitCutInSprite: {fileID: 21300000, guid: 3d8acc30d84240547b3f01c254fb58c2, type: 3}
   hitShadowSprite: {fileID: 21300000, guid: 79742bf375f6a0a43ad3691895520965, type: 3}
   flipCutInX: 1
+  attackCutInScale: 1
+  hitCutInScale: 1
   attackSound: {fileID: 8300000, guid: 040d077caae32ee459582e0264644154, type: 3}

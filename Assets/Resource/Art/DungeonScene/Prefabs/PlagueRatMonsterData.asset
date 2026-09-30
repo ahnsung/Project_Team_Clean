@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1af3387c43186c2499cd5bb694d75411, type: 3}
   m_Name: PlagueRatMonsterData
   m_EditorClassIdentifier: 
+  enemyId: 3002
   monsterName: Monster PlagueRat
   monsterPrefab: {fileID: 5870118318321618872, guid: aa8e945dec2195b4382d7fc550ab7a9f, type: 3}
   maxHP: 20
@@ -23,4 +24,6 @@ MonoBehaviour:
   hitCutInSprite: {fileID: -7809848136824540015, guid: 19432b59bcb763d4aa4ab2df327f6f4b, type: 3}
   hitShadowSprite: {fileID: -6674109277364804146, guid: 6c8d00220b9d55740851b92bb169f5df, type: 3}
   flipCutInX: 1
+  attackCutInScale: 1
+  hitCutInScale: 1
   attackSound: {fileID: 8300000, guid: f2afcefd48ec9cf46a2515e2f8c3a0f5, type: 3}
