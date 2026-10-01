@@ -1947,6 +1947,23 @@ public class BattleManager : MonoBehaviour
         StatusEffectController playerStatusController =
             GetPlayerStatusController();
 
+        // =====================================================
+        // 플레이어 팀 순서 종료
+        //
+        // 원본 상태이상 테이블의 when_decrease_duration = 3은
+        // PlayerTeamEnd(플레이어 순서 끝)이다.
+        //
+        // 플레이어의 행동이 끝나 EnemyTurnRoutine으로 넘어온
+        // 이 시점에 처리해야 2132 같은 상태이상의 지속시간이
+        // 정상적으로 3 -> 2 -> 1 -> 0으로 감소한다.
+        // =====================================================
+        if (playerStatusController != null)
+        {
+            playerStatusController.ProcessTiming(
+                StatusEffectTiming.PlayerTeamEnd
+            );
+        }
+
         BattleUnit[] aliveEnemies =
             enemies.ToArray();
 
@@ -2480,11 +2497,77 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
+        // =====================================================
+        // DEBUG - 적 패턴 상태이상 중복 추적
+        // 원인 확인 후 제거해도 되는 로그다.
+        // =====================================================
+        int sameStatusCountBefore = 0;
+
+        foreach (ActiveStatusEffect activeEffect
+                 in playerStatusController.ActiveEffects)
+        {
+            if (activeEffect != null &&
+                activeEffect.Data != null &&
+                activeEffect.Data.id == effect.statusId)
+            {
+                sameStatusCountBefore++;
+            }
+        }
+
+        Debug.Log(
+            "[STATUS DEBUG] 적용 직전" +
+            " / Status ID: " +
+            effect.statusId +
+            " / 이름: " +
+            statusData.buffName +
+            " / Controller GO: " +
+            playerStatusController.gameObject.name +
+            " / Controller InstanceID: " +
+            playerStatusController.GetInstanceID() +
+            " / 동일 ID 개수: " +
+            sameStatusCountBefore
+        );
+
         bool added =
             playerStatusController
                 .AddStatusEffect(
                     statusData
                 );
+
+        int sameStatusCountAfter = 0;
+        string sameStatusDurations = "";
+
+        foreach (ActiveStatusEffect activeEffect
+                 in playerStatusController.ActiveEffects)
+        {
+            if (activeEffect != null &&
+                activeEffect.Data != null &&
+                activeEffect.Data.id == effect.statusId)
+            {
+                sameStatusCountAfter++;
+
+                if (sameStatusDurations.Length > 0)
+                    sameStatusDurations += ", ";
+
+                sameStatusDurations +=
+                    activeEffect.RemainingDuration.ToString();
+            }
+        }
+
+        Debug.Log(
+            "[STATUS DEBUG] 적용 직후" +
+            " / Status ID: " +
+            effect.statusId +
+            " / Controller GO: " +
+            playerStatusController.gameObject.name +
+            " / Controller InstanceID: " +
+            playerStatusController.GetInstanceID() +
+            " / 동일 ID 개수: " +
+            sameStatusCountAfter +
+            " / 지속시간들: [" +
+            sameStatusDurations +
+            "]"
+        );
 
         Debug.Log(
             "[BattleManager] 적 패턴 상태이상 적용" +

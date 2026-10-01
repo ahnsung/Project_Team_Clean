@@ -64,50 +64,18 @@ public class StatusEffectController : MonoBehaviour
 
 
         // =====================================================
-        // 중첩 가능
+        // 동일 ID 상태이상은 항상 하나만 유지
         //
-        // 같은 ID라도 각각 독립적인 인스턴스로 존재한다.
+        // canStack 값과 관계없이 같은 ID가 이미 존재하면
+        // 새 인스턴스를 만들지 않고 지속시간만 갱신한다.
         //
         // 예:
-        // DEX 감소 2턴
-        // DEX 감소 5턴
-        //
-        // 두 효과가 각각 따로 감소한다.
+        // 기존 2턴 + 새 3턴 -> 3턴
+        // 기존 3턴 + 새 2턴 -> 3턴
         // =====================================================
 
-        if (data.canStack)
-        {
-            ActiveStatusEffect stackedEffect =
-                new ActiveStatusEffect(data);
-
-            activeEffects.Add(
-                stackedEffect
-            );
-
-            Debug.Log(
-                "[StatusEffectController] " +
-                "중첩 상태이상 추가: " +
-                data.buffName +
-                " / 지속시간: " +
-                (
-                    stackedEffect.IsInfinite
-                        ? "무한"
-                        : stackedEffect
-                            .RemainingDuration
-                            .ToString()
-                ) +
-                " / 동일 ID 개수: " +
-                GetSameEffectCount(data.id)
-            );
-
-            NotifyChanged();
-
-            return true;
-        }
-
-
         // =====================================================
-        // 중첩 불가능
+        // 기존 동일 ID가 있으면 갱신
         //
         // 하나만 유지하고 더 긴 지속시간으로 갱신
         // =====================================================
@@ -130,7 +98,7 @@ public class StatusEffectController : MonoBehaviour
 
             Debug.Log(
                 "[StatusEffectController] " +
-                "중첩 불가 상태이상 갱신: " +
+                "동일 ID 상태이상 갱신: " +
                 data.buffName +
                 " / 남은 지속시간: " +
                 (

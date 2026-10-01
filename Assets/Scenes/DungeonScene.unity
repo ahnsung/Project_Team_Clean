@@ -11028,7 +11028,11 @@ MonoBehaviour:
   cutInController: {fileID: 956932503}
   playerUnit: {fileID: 1836735080}
   monsterPool:
+  - {fileID: 11400000, guid: edececc733e67cf4c82fff8aaf3903fe, type: 2}
   - {fileID: 11400000, guid: e258fa3da8c0abc41a5a0e16c8b3e4cb, type: 2}
+  - {fileID: 11400000, guid: bbd859ed0f0f35441ad1ea9d4a6a4a74, type: 2}
+  - {fileID: 11400000, guid: 0f4bc36640a6d1741b4489bd5c23350d, type: 2}
+  - {fileID: 11400000, guid: ca2ab17d0b6dc3d4bb23356b9b45e833, type: 2}
   enemyGroup: {fileID: 1557960058}
   enemySpawnPoints:
   - {fileID: 963636148}
@@ -14855,9 +14859,9 @@ MonoBehaviour:
   dungeonManager: {fileID: 268140400}
   battleManager: {fileID: 1052808771}
   fadeController: {fileID: 2125530133}
-  generalBattleStartChance: 0
-  generalBattleIncreaseAmount: 0
-  statusBattleChanceIncrease: 0
+  generalBattleStartChance: 100
+  generalBattleIncreaseAmount: 100
+  statusBattleChanceIncrease: 100
 --- !u!1 &1350040349
 GameObject:
   m_ObjectHideFlags: 0
