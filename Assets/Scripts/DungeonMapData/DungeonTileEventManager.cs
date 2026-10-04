@@ -211,6 +211,20 @@ public class DungeonTileEventManager : MonoBehaviour
                 break;
 
 
+            // =====================================
+            // Shop Update
+            // =====================================
+
+            case DungeonTileType.ShopUpdate:
+
+                yield return
+                    HandleShopUpdateEnter(
+                        tile
+                    );
+
+                break;
+
+
             default:
 
                 break;
@@ -1165,6 +1179,103 @@ public class DungeonTileEventManager : MonoBehaviour
     // =========================================================
     // TELEPORT
     // =========================================================
+
+    // =========================================================
+    // Shop Update
+    // =========================================================
+
+    private IEnumerator HandleShopUpdateEnter(
+        DungeonTileData tile)
+    {
+        if (tile == null)
+        {
+            Debug.LogWarning(
+                "[DungeonTileEventManager] " +
+                "Shop_Update 타일 데이터가 없습니다."
+            );
+
+            yield break;
+        }
+
+
+        // -----------------------------------------------------
+        // ShopTileDataLoader 확인
+        // -----------------------------------------------------
+
+        if (ShopTileDataLoader.Instance == null)
+        {
+            Debug.LogError(
+                "[DungeonTileEventManager] " +
+                "ShopTileDataLoader.Instance가 없습니다."
+            );
+
+            yield break;
+        }
+
+
+        // -----------------------------------------------------
+        // 현재 좌표의 Shop Level 확인
+        // -----------------------------------------------------
+
+        if (!ShopTileDataLoader.Instance.TryGetShopLevel(
+                tile.X,
+                tile.Y,
+                out int shopLevel))
+        {
+            Debug.LogWarning(
+                "[DungeonTileEventManager] " +
+                "Shop_Update 좌표에 해당하는 " +
+                "Shop Level 데이터가 없습니다.\n" +
+                $"좌표: ({tile.X}, {tile.Y})"
+            );
+
+            yield break;
+        }
+
+
+        // -----------------------------------------------------
+        // ShopManager 확인
+        // -----------------------------------------------------
+
+        if (ShopManager.Instance == null)
+        {
+            Debug.LogError(
+                "[DungeonTileEventManager] " +
+                "ShopManager.Instance가 없습니다.\n" +
+                $"좌표: ({tile.X}, {tile.Y})\n" +
+                $"Shop Level: {shopLevel}"
+            );
+
+            yield break;
+        }
+
+
+        // -----------------------------------------------------
+        // 상점 레벨 해금
+        // -----------------------------------------------------
+
+        Debug.Log(
+            "[DungeonTileEventManager] " +
+            "Shop_Update 타일 발동\n" +
+            $"좌표: ({tile.X}, {tile.Y})\n" +
+            $"Shop Level: {shopLevel}"
+        );
+
+
+        ShopManager.Instance.UnlockShopLevel(
+            shopLevel
+        );
+
+
+        Debug.Log(
+            "[DungeonTileEventManager] " +
+            "Shop_Update 처리 완료\n" +
+            $"Shop Level: {shopLevel}"
+        );
+
+
+        yield break;
+    }
 
     private IEnumerator HandleTeleportEnter(
         DungeonTileData tile)

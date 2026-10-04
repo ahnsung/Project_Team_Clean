@@ -28,6 +28,7 @@ public class InventoryManager : MonoBehaviour
         }
 
         Instance = this;
+        DontDestroyOnLoad(gameObject);
 
         if (items == null)
         {
@@ -134,12 +135,50 @@ public class InventoryManager : MonoBehaviour
 
     public bool AddItem(int itemId)
     {
+        return AddItem(itemId, 1);
+    }
+
+    // 지정 수량만큼 아이템을 획득한다.
+    // 1020(솔라스톤)은 인벤토리 칸 대신 별도 화폐 수치로 지급한다.
+    public bool AddItem(int itemId, int amount)
+    {
+        if (amount <= 0)
+        {
+            Debug.LogWarning(
+                "[InventoryManager] 추가할 아이템 수량은 1 이상이어야 합니다.\\n" +
+                $"Item ID: {itemId}\\n" +
+                $"Amount: {amount}"
+            );
+            return false;
+        }
+
+        if (itemId == 1020)
+        {
+            if (SolastoneManager.Instance == null)
+            {
+                Debug.LogError(
+                    "[InventoryManager] SolastoneManager.Instance가 없습니다.\\n" +
+                    "StartScene의 SolastoneManager 오브젝트를 확인해주세요."
+                );
+                return false;
+            }
+
+            SolastoneManager.Instance.Add(amount);
+
+            Debug.Log(
+                "[InventoryManager] 솔라스톤 획득 처리\\n" +
+                $"획득량: {amount}\\n" +
+                $"현재 보유량: {SolastoneManager.Instance.CurrentAmount}"
+            );
+
+            return true;
+        }
+
         if (ItemDatabase.Instance == null)
         {
             Debug.LogError(
                 "ItemDatabase.Instance가 없습니다."
             );
-
             return false;
         }
 
@@ -150,39 +189,55 @@ public class InventoryManager : MonoBehaviour
         if (data == null)
             return false;
 
-        InventoryItem newItem =
-            new InventoryItem(data);
+        int addedCount = 0;
 
-        bool found =
-            TryFindEmptyPosition(
-                newItem,
-                true,
-                out Vector2Int position,
-                out int rotation
-            );
-
-        if (!found)
+        for (int i = 0; i < amount; i++)
         {
-            Debug.Log(
-                "인벤토리 공간이 부족합니다. " +
-                "초과 칸은 다음 단계에서 연결합니다."
+            InventoryItem newItem =
+                new InventoryItem(data);
+
+            bool found =
+                TryFindEmptyPosition(
+                    newItem,
+                    true,
+                    out Vector2Int position,
+                    out int rotation
+                );
+
+            if (!found)
+            {
+                Debug.Log(
+                    "인벤토리 공간이 부족합니다. " +
+                    "초과 칸은 다음 단계에서 연결합니다."
+                );
+                break;
+            }
+
+            newItem.SetRotation(rotation);
+            items.Add(newItem);
+
+            PlaceItem(
+                newItem,
+                position
             );
 
-            return false;
+            addedCount++;
         }
 
-        newItem.SetRotation(rotation);
+        if (addedCount > 0)
+            RefreshUI();
 
-        items.Add(newItem);
+        if (addedCount < amount)
+        {
+            Debug.LogWarning(
+                "[InventoryManager] 요청한 아이템 수량을 전부 추가하지 못했습니다.\\n" +
+                $"Item ID: {itemId}\\n" +
+                $"요청 수량: {amount}\\n" +
+                $"추가 수량: {addedCount}"
+            );
+        }
 
-        PlaceItem(
-            newItem,
-            position
-        );
-
-        RefreshUI();
-
-        return true;
+        return addedCount == amount;
     }
 
     public bool TryMoveItem(

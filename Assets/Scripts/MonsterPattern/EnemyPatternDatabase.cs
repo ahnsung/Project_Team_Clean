@@ -131,6 +131,141 @@ public class EnemyPatternDatabase : MonoBehaviour
             target: 0
         );
 
+        // -----------------------------------------------------
+        // Enemy 3002
+        // -----------------------------------------------------
+
+        // 5010 - 기본 공격
+        // 일반 패턴 / 60%
+        RegisterPattern(
+            enemyId: 3002,
+            patternId: 5010,
+            patternName: "기본 공격",
+            patternPossibility: 60,
+            condition: 0,
+            hp: 0,
+            beforePatternId: 0,
+            effectType: 0,
+            effectPower: 0f,
+            statusId: 0,
+            order: 0,
+            target: 0
+        );
+
+        // 5011 - 오염된 이빨
+        // 일반 패턴 / 40%
+        // Status 2005 = 중독
+        // Target 0 = 플레이어
+        RegisterPattern(
+            enemyId: 3002,
+            patternId: 5011,
+            patternName: "오염된 이빨",
+            patternPossibility: 40,
+            condition: 0,
+            hp: 0,
+            beforePatternId: 0,
+            effectType: 17,
+            effectPower: 0f,
+            statusId: 2005,
+            order: 0,
+            target: 0
+        );
+
+
+        // -----------------------------------------------------
+        // Enemy 3003
+        // -----------------------------------------------------
+
+        // 5020 - 기본 공격
+        // 일반 패턴 / 60%
+        RegisterPattern(
+            enemyId: 3003,
+            patternId: 5020,
+            patternName: "기본 공격",
+            patternPossibility: 60,
+            condition: 0,
+            hp: 0,
+            beforePatternId: 0,
+            effectType: 0,
+            effectPower: 0f,
+            statusId: 0,
+            order: 0,
+            target: 0
+        );
+
+        // 5021 - 방어
+        // 5020 다음에 발동하는 연계 패턴
+        // Status 2128 = 데미지 감소
+        RegisterPattern(
+            enemyId: 3003,
+            patternId: 5021,
+            patternName: "방어",
+            patternPossibility: 0,
+            condition: 1,
+            hp: 0,
+            beforePatternId: 5020,
+            effectType: 17,
+            effectPower: 0f,
+            statusId: 2128,
+            order: 0,
+            target: 1
+        );
+
+        // 5022 - 자원 강탈
+        // 일반 패턴 / 30%
+        // 같은 Pattern_ID에 두 효과가 존재한다.
+        // Order 0: 배고픔 -10
+        RegisterPattern(
+            enemyId: 3003,
+            patternId: 5022,
+            patternName: "자원 강탈",
+            patternPossibility: 30,
+            condition: 0,
+            hp: 0,
+            beforePatternId: 0,
+            effectType: 2,
+            effectPower: -10f,
+            statusId: 0,
+            order: 0,
+            target: 0
+        );
+
+        // 5022 - 자원 강탈
+        // Order 1: 정신력 -10
+        RegisterPattern(
+            enemyId: 3003,
+            patternId: 5022,
+            patternName: "자원 강탈",
+            patternPossibility: 30,
+            condition: 0,
+            hp: 0,
+            beforePatternId: 0,
+            effectType: 3,
+            effectPower: -10f,
+            statusId: 0,
+            order: 1,
+            target: 0
+        );
+
+        // 5023 - 섬광탄
+        // 일반 패턴 / 10%
+        // Status 2001 = 기절
+        RegisterPattern(
+            enemyId: 3003,
+            patternId: 5023,
+            patternName: "섬광탄",
+            patternPossibility: 10,
+            condition: 0,
+            hp: 0,
+            beforePatternId: 0,
+            effectType: 17,
+            effectPower: 0f,
+            statusId: 2001,
+            order: 0,
+            target: 0
+        );
+
+
         Debug.Log(
             "[EnemyPatternDatabase] 기본 패턴 데이터 등록 완료." +
             " 총 행 수: " +
@@ -533,6 +668,49 @@ public class EnemyPatternDatabase : MonoBehaviour
             "=========================================="
         );
     }
+
+    // =========================================================
+    // 3002 테스트
+    // =========================================================
+
+    [ContextMenu("3002 패턴 데이터 테스트")]
+    private void TestEnemy3002Patterns()
+    {
+        List<EnemyPatternData> rows =
+            GetEnemyPatternRows(3002);
+
+        Debug.Log(
+            "========== 3002 패턴 데이터 테스트 =========="
+        );
+
+        foreach (EnemyPatternData row in rows)
+        {
+            Debug.Log(
+                "Pattern: " +
+                row.patternId +
+                " (" +
+                row.patternName +
+                ")" +
+                " | Possibility: " +
+                row.patternPossibility +
+                "%" +
+                " | EffectType: " +
+                row.effectType +
+                " | StatusId: " +
+                row.statusId
+            );
+        }
+
+        Debug.Log(
+            "총 행 수: " +
+            rows.Count
+        );
+
+        Debug.Log(
+            "=========================================="
+        );
+    }
+
 
     private string GetPatternDebugName(
         EnemyPatternData pattern)

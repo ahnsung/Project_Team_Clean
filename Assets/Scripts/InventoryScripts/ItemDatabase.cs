@@ -37,6 +37,12 @@ public class ItemDatabase : MonoBehaviour
     [Tooltip("1022 연막탄")] public Sprite item1022SmokeBombIcon;
     [Tooltip("1023 투명 장치")] public Sprite item1023InvisibilityDeviceIcon;
 
+    [Header("Shop Weapon Sprites - 1109 ~ 1112")]
+    [Tooltip("1109 녹슨 단검")] public Sprite item1109RustyDaggerIcon;
+    [Tooltip("1110 녹슨 도끼")] public Sprite item1110RustyAxeIcon;
+    [Tooltip("1111 제작 단검")] public Sprite item1111CraftedDaggerIcon;
+    [Tooltip("1112 녹슨 권총")] public Sprite item1112RustyPistolIcon;
+
     [Header("Equipment Test Sprites")]
     public Sprite testWeaponIcon;
     public Sprite testArmorIcon;
@@ -65,7 +71,15 @@ public class ItemDatabase : MonoBehaviour
 
         Instance = this;
 
+        // StartScene에서 생성된 ItemDatabase를
+        // Menu / CharacterSelect / Dungeon / Lobby에서도 계속 유지한다.
+        DontDestroyOnLoad(gameObject);
+
         CreateItems();
+
+        Debug.Log(
+            "[ItemDatabase] 전역 ItemDatabase 생성 완료 / DontDestroyOnLoad 적용"
+        );
     }
 
 
@@ -251,6 +265,64 @@ public class ItemDatabase : MonoBehaviour
 
 
         // =====================================================
+        // 상점 무기 - 원본 "장비 테이블 심사용" 기준
+        // 1109 ~ 1112
+        // =====================================================
+
+        CreateWeaponItem(
+            1109,
+            "녹슨 단검",
+            "공격력 +5, DEX +1",
+            item1109RustyDaggerIcon,
+            30,
+            5,
+            1,
+            0,
+            4001,
+            CreateShape2()
+        );
+
+        CreateWeaponItem(
+            1110,
+            "녹슨 도끼",
+            "공격력 +7, DEX +1",
+            item1110RustyAxeIcon,
+            30,
+            7,
+            1,
+            0,
+            4002,
+            CreateLinearShape(4)
+        );
+
+        CreateWeaponItem(
+            1111,
+            "제작 단검",
+            "공격력 +3, DEX +2",
+            item1111CraftedDaggerIcon,
+            30,
+            3,
+            2,
+            0,
+            4003,
+            CreateShape2()
+        );
+
+        CreateWeaponItem(
+            1112,
+            "녹슨 권총",
+            "공격력 +3, 명중률 +10",
+            item1112RustyPistolIcon,
+            30,
+            3,
+            0,
+            10,
+            4004,
+            CreateLinearShape(3)
+        );
+
+
+        // =====================================================
         // 테스트 무기
         // =====================================================
 
@@ -429,7 +501,121 @@ public class ItemDatabase : MonoBehaviour
             };
 
 
+        ApplyShopPrice(item);
+
+
         return item;
+    }
+
+
+    // =========================================================
+    // Shop Price - 원본 아이템/장비 테이블 기준
+    // =========================================================
+
+    private void ApplyShopPrice(ItemData item)
+    {
+        if (item == null) return;
+
+        item.buyPrice = 0;
+        item.sellPrice = 0;
+
+        switch (item.id)
+        {
+            case 1001: item.buyPrice = 5; item.sellPrice = 3; break;
+            case 1002: item.buyPrice = 8; item.sellPrice = 5; break;
+            case 1003: item.buyPrice = 12; item.sellPrice = 8; break;
+            case 1004: item.buyPrice = 6; item.sellPrice = 3; break;
+            case 1005: item.buyPrice = 9; item.sellPrice = 5; break;
+            case 1006: item.buyPrice = 14; item.sellPrice = 8; break;
+            case 1007: item.buyPrice = 6; item.sellPrice = 3; break;
+            case 1008: item.buyPrice = 9; item.sellPrice = 5; break;
+            case 1009: item.buyPrice = 14; item.sellPrice = 8; break;
+            case 1010: item.buyPrice = 7; item.sellPrice = 4; break;
+            case 1011: item.buyPrice = 10; item.sellPrice = 6; break;
+            case 1013: item.buyPrice = 3; item.sellPrice = 1; break;
+            case 1014: item.buyPrice = 8; item.sellPrice = 4; break;
+            case 1015: item.buyPrice = 12; item.sellPrice = 5; break;
+            case 1018: item.buyPrice = 15; item.sellPrice = 8; break;
+            case 1019: item.buyPrice = 0; item.sellPrice = 0; break;
+
+            case 1030:
+            case 1031:
+            case 1032:
+            case 1033:
+            case 1034:
+                item.buyPrice = 0;
+                item.sellPrice = 0;
+                break;
+
+            case 1101: item.buyPrice = 15; item.sellPrice = 10; break;
+            case 1102: item.buyPrice = 20; item.sellPrice = 15; break;
+            case 1103: item.buyPrice = 30; item.sellPrice = 20; break;
+            case 1104: item.buyPrice = 15; item.sellPrice = 10; break;
+            case 1105: item.buyPrice = 20; item.sellPrice = 15; break;
+            case 1106: item.buyPrice = 30; item.sellPrice = 20; break;
+            case 1107: item.buyPrice = 15; item.sellPrice = 10; break;
+            case 1108: item.buyPrice = 20; item.sellPrice = 15; break;
+            case 1109: item.buyPrice = 10; item.sellPrice = 4; break;
+            case 1110: item.buyPrice = 10; item.sellPrice = 4; break;
+            case 1111: item.buyPrice = 20; item.sellPrice = 15; break;
+            case 1112: item.buyPrice = 20; item.sellPrice = 15; break;
+            case 1113: item.buyPrice = 30; item.sellPrice = 20; break;
+            case 1114: item.buyPrice = 30; item.sellPrice = 20; break;
+            case 1115: item.buyPrice = 30; item.sellPrice = 20; break;
+        }
+    }
+
+
+    // =========================================================
+    // Weapon
+    // =========================================================
+
+    private void CreateWeaponItem(
+        int id,
+        string itemName,
+        string description,
+        Sprite icon,
+        int maxDurability,
+        int attackPower,
+        int dex,
+        int accuracyBonus,
+        int weaponSkillId,
+        List<Vector2Int> shape)
+    {
+        ItemData item =
+            NewBaseItem(
+                id,
+                itemName,
+                ItemCategory.Equipment,
+                description,
+                icon
+            );
+
+        item.equipmentType =
+            EquipmentType.Weapon;
+
+        item.maxDurability =
+            Mathf.Max(0, maxDurability);
+
+        item.statModifier.attackPower =
+            attackPower;
+
+        item.statModifier.dex =
+            dex;
+
+        item.statModifier.accuracyBonus =
+            accuracyBonus;
+
+        item.weaponSkillId =
+            weaponSkillId;
+
+        item.shape =
+            shape ??
+            CreateShape1();
+
+        item.EnsureValidShape();
+
+        database[id] = item;
     }
 
 

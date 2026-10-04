@@ -12,5 +12,8 @@ public enum DungeonTileType
     Rest,
     Boss,
     LockedDoor,
-    Exit
+    Exit,
+
+    // 상점 재고 확장 타일
+    ShopUpdate
 }

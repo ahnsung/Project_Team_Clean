@@ -99,6 +99,24 @@ public class SaveManager : MonoBehaviour
 
         public List<string> openedLockedDoors =
             new List<string>();
+
+
+        // =====================================================
+        // Dungeon
+        // =====================================================
+
+        public bool hasDungeonState;
+
+        public int dungeonRoomX;
+        public int dungeonRoomY;
+
+        public int dungeonTurn;
+
+        public string dungeonEnvironment =
+            "지하";
+
+        public List<string> visitedRooms =
+            new List<string>();
     }
 
 
@@ -301,6 +319,15 @@ public class SaveManager : MonoBehaviour
         PlayerPrefs.DeleteKey(
             GameplaySaveKey
         );
+
+
+        // 이전 Run의 던전 위치가 새 게임에 섞이지 않도록 제거
+        PlayerPrefs.DeleteKey("ROOM_X");
+        PlayerPrefs.DeleteKey("ROOM_Y");
+        PlayerPrefs.DeleteKey("VISITED");
+        PlayerPrefs.DeleteKey("DUNGEON_TURN");
+        PlayerPrefs.DeleteKey("DUNGEON_ENVIRONMENT");
+        PlayerPrefs.DeleteKey("DUNGEON_FRESH_ENTRY");
 
 
         PlayerPrefs.Save();
@@ -556,6 +583,122 @@ public class SaveManager : MonoBehaviour
 
 
         // =====================================================
+        // Dungeon
+        // =====================================================
+
+        DungeonManager dungeonManager =
+            DungeonManager.Instance;
+
+
+        if (dungeonManager != null)
+        {
+            saveData.hasDungeonState =
+                true;
+
+
+            saveData.dungeonRoomX =
+                dungeonManager.CurrentRoom.x;
+
+
+            saveData.dungeonRoomY =
+                dungeonManager.CurrentRoom.y;
+
+
+            saveData.dungeonTurn =
+                dungeonManager.CurrentTurn;
+
+
+            saveData.dungeonEnvironment =
+                dungeonManager.CurrentEnvironment;
+
+
+            saveData.visitedRooms =
+                dungeonManager
+                    .GetVisitedRoomsForSave();
+        }
+        else
+        {
+            /*
+             * Lobby 등 DungeonManager가 없는 Scene에서 저장해도
+             * 마지막 던전 위치가 사라지지 않도록
+             * DungeonManager가 사용하던 PlayerPrefs를 백업한다.
+             */
+            bool hasRoom =
+                PlayerPrefs.HasKey("ROOM_X") &&
+                PlayerPrefs.HasKey("ROOM_Y");
+
+
+            if (hasRoom)
+            {
+                saveData.hasDungeonState =
+                    true;
+
+
+                saveData.dungeonRoomX =
+                    PlayerPrefs.GetInt(
+                        "ROOM_X"
+                    );
+
+
+                saveData.dungeonRoomY =
+                    PlayerPrefs.GetInt(
+                        "ROOM_Y"
+                    );
+
+
+                saveData.dungeonTurn =
+                    PlayerPrefs.GetInt(
+                        "DUNGEON_TURN",
+                        0
+                    );
+
+
+                saveData.dungeonEnvironment =
+                    PlayerPrefs.GetString(
+                        "DUNGEON_ENVIRONMENT",
+                        "지하"
+                    );
+
+
+                string visitedData =
+                    PlayerPrefs.GetString(
+                        "VISITED",
+                        ""
+                    );
+
+
+                if (
+                    !string.IsNullOrWhiteSpace(
+                        visitedData
+                    )
+                )
+                {
+                    string[] values =
+                        visitedData.Split('|');
+
+
+                    foreach (
+                        string value
+                        in values
+                    )
+                    {
+                        if (
+                            !string.IsNullOrWhiteSpace(
+                                value
+                            )
+                        )
+                        {
+                            saveData.visitedRooms.Add(
+                                value
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+
+        // =====================================================
         // JSON
         // =====================================================
 
@@ -584,7 +727,11 @@ public class SaveManager : MonoBehaviour
                 $"획득한 Key 타일: " +
                 $"{saveData.usedKeyTiles.Count}개\n" +
                 $"열린 LockedDoor: " +
-                $"{saveData.openedLockedDoors.Count}개"
+                $"{saveData.openedLockedDoors.Count}개\n" +
+                $"던전 저장: {saveData.hasDungeonState}\n" +
+                $"던전 위치: " +
+                $"({saveData.dungeonRoomX}, {saveData.dungeonRoomY})\n" +
+                $"던전 턴: {saveData.dungeonTurn}"
             );
         }
     }
@@ -797,6 +944,24 @@ public class SaveManager : MonoBehaviour
         {
             saveData.openedLockedDoors =
                 new List<string>();
+        }
+
+
+        if (saveData.visitedRooms == null)
+        {
+            saveData.visitedRooms =
+                new List<string>();
+        }
+
+
+        if (
+            string.IsNullOrEmpty(
+                saveData.dungeonEnvironment
+            )
+        )
+        {
+            saveData.dungeonEnvironment =
+                "지하";
         }
 
 
@@ -1085,6 +1250,32 @@ public class SaveManager : MonoBehaviour
 
 
             // =================================================
+            // Dungeon 복구
+            // =================================================
+
+            DungeonManager dungeonManager =
+                DungeonManager.Instance;
+
+
+            if (
+                dungeonManager != null &&
+                saveData.hasDungeonState
+            )
+            {
+                dungeonManager
+                    .RestoreDungeonState(
+                        new Vector2Int(
+                            saveData.dungeonRoomX,
+                            saveData.dungeonRoomY
+                        ),
+                        saveData.dungeonTurn,
+                        saveData.dungeonEnvironment,
+                        saveData.visitedRooms
+                    );
+            }
+
+
+            // =================================================
             // UI Refresh
             // =================================================
 
@@ -1109,7 +1300,11 @@ public class SaveManager : MonoBehaviour
                     $"획득한 Key 타일: " +
                     $"{saveData.usedKeyTiles.Count}개\n" +
                     $"열린 LockedDoor: " +
-                    $"{saveData.openedLockedDoors.Count}개"
+                    $"{saveData.openedLockedDoors.Count}개\n" +
+                    $"던전 저장: {saveData.hasDungeonState}\n" +
+                    $"던전 위치: " +
+                    $"({saveData.dungeonRoomX}, {saveData.dungeonRoomY})\n" +
+                    $"던전 턴: {saveData.dungeonTurn}"
                 );
             }
         }
@@ -1208,6 +1403,14 @@ public class SaveManager : MonoBehaviour
         PlayerPrefs.DeleteKey(
             GameplaySaveKey
         );
+
+
+        PlayerPrefs.DeleteKey("ROOM_X");
+        PlayerPrefs.DeleteKey("ROOM_Y");
+        PlayerPrefs.DeleteKey("VISITED");
+        PlayerPrefs.DeleteKey("DUNGEON_TURN");
+        PlayerPrefs.DeleteKey("DUNGEON_ENVIRONMENT");
+        PlayerPrefs.DeleteKey("DUNGEON_FRESH_ENTRY");
 
 
         PlayerPrefs.Save();

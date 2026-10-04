@@ -299,6 +299,16 @@ public class DungeonMapLoader : MonoBehaviour
                     DungeonTileType
                         .LockedDoor;
 
+            // =====================================
+            // Shop Update
+            // =====================================
+            case "shop_update":
+            case "shopupdate":
+            case "shop update":
+                return
+                    DungeonTileType
+                        .ShopUpdate;
+
             default:
 
                 Debug.LogWarning(

@@ -178,22 +178,57 @@ public class DungeonManager : MonoBehaviour
             ) == 1;
 
 
-        if (freshDungeonEntry)
+        /*
+         * 중요:
+         * DUNGEON_FRESH_ENTRY가 남아 있더라도
+         * 실제 저장된 던전 좌표가 존재한다면 Continue로 판단한다.
+         *
+         * 예전 코드처럼 freshDungeonEntry만 보고 startRoom으로
+         * 강제 이동시키면 게임 재실행 시 마지막 위치가 사라진다.
+         */
+        bool hasSavedDungeonPosition =
+            PlayerPrefs.HasKey(
+                XKEY
+            ) &&
+            PlayerPrefs.HasKey(
+                YKEY
+            );
+
+
+        if (
+            freshDungeonEntry &&
+            hasSavedDungeonPosition
+        )
+        {
+            freshDungeonEntry =
+                false;
+
+
+            PlayerPrefs.DeleteKey(
+                FreshDungeonEntryKey
+            );
+
+
+            PlayerPrefs.Save();
+
+
+            Debug.Log(
+                "[DungeonManager] " +
+                "저장된 던전 위치가 있으므로 Continue로 처리\n" +
+                $"복구 위치: {currentRoom}"
+            );
+        }
+        else if (freshDungeonEntry)
         {
             /*
-             * Lobby -> Dungeon 정상 입장.
-             *
-             * 저장된 마지막 던전 위치가 어디든
-             * Base Camp에서 시작한다.
+             * 정말 저장된 던전 위치가 없는 경우에만
+             * 새로운 Run으로 보고 Base Camp에서 시작한다.
              */
 
             currentRoom =
                 startRoom;
 
 
-            /*
-             * 플래그는 1회용.
-             */
             PlayerPrefs.DeleteKey(
                 FreshDungeonEntryKey
             );

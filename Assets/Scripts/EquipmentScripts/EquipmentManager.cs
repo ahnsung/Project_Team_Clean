@@ -85,6 +85,8 @@ public class EquipmentManager : MonoBehaviour
         }
 
         Instance = this;
+
+        DontDestroyOnLoad(gameObject);
     }
 
     private void Start()

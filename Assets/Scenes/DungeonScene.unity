@@ -3096,6 +3096,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 426635207}
   m_CullTransparentMesh: 1
+--- !u!1 &427533908
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 427533909}
+  - component: {fileID: 427533910}
+  m_Layer: 0
+  m_Name: ShopTileDataLoader
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &427533909
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 427533908}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 818823549}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &427533910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 427533908}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f9ae2ff9ec63f44182f73bc0a2c2fe3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &427869809
 GameObject:
   m_ObjectHideFlags: 0
@@ -3258,198 +3302,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!1 &436011798
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 436011799}
-  - component: {fileID: 436011800}
-  m_Layer: 0
-  m_Name: EquipmentManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &436011799
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 436011798}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 818823549}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &436011800
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 436011798}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b9b2a3f4a25272b46a1b9f2a760ac247, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  inventoryManager: {fileID: 1670881761}
-  playerStats: {fileID: 942666938}
-  head:
-    uniqueId: 
-    data:
-      id: 0
-      itemName: 
-      category: 0
-      maxUseCount: 0
-      consumeTurnOnUse: 0
-      canDrop: 1
-      effectDescription: 
-      icon: {fileID: 0}
-      statusId: 0
-      order: 0
-      shape: []
-      equipmentType: 0
-      maxDurability: 0
-      statModifier:
-        str: 0
-        dex: 0
-        con: 0
-        intelligence: 0
-        attackPower: 0
-        accuracyBonus: 0
-      weaponSkillId: 0
-      weaponSkillDescription: 
-    remainUseCount: 0
-    position: {x: 0, y: 0}
-    rotation: 0
-    currentDurability: 0
-  armor:
-    uniqueId: 
-    data:
-      id: 0
-      itemName: 
-      category: 0
-      maxUseCount: 0
-      consumeTurnOnUse: 0
-      canDrop: 1
-      effectDescription: 
-      icon: {fileID: 0}
-      statusId: 0
-      order: 0
-      shape: []
-      equipmentType: 0
-      maxDurability: 0
-      statModifier:
-        str: 0
-        dex: 0
-        con: 0
-        intelligence: 0
-        attackPower: 0
-        accuracyBonus: 0
-      weaponSkillId: 0
-      weaponSkillDescription: 
-    remainUseCount: 0
-    position: {x: 0, y: 0}
-    rotation: 0
-    currentDurability: 0
-  shoes:
-    uniqueId: 
-    data:
-      id: 0
-      itemName: 
-      category: 0
-      maxUseCount: 0
-      consumeTurnOnUse: 0
-      canDrop: 1
-      effectDescription: 
-      icon: {fileID: 0}
-      statusId: 0
-      order: 0
-      shape: []
-      equipmentType: 0
-      maxDurability: 0
-      statModifier:
-        str: 0
-        dex: 0
-        con: 0
-        intelligence: 0
-        attackPower: 0
-        accuracyBonus: 0
-      weaponSkillId: 0
-      weaponSkillDescription: 
-    remainUseCount: 0
-    position: {x: 0, y: 0}
-    rotation: 0
-    currentDurability: 0
-  mainWeapon:
-    uniqueId: 
-    data:
-      id: 0
-      itemName: 
-      category: 0
-      maxUseCount: 0
-      consumeTurnOnUse: 0
-      canDrop: 1
-      effectDescription: 
-      icon: {fileID: 0}
-      statusId: 0
-      order: 0
-      shape: []
-      equipmentType: 0
-      maxDurability: 0
-      statModifier:
-        str: 0
-        dex: 0
-        con: 0
-        intelligence: 0
-        attackPower: 0
-        accuracyBonus: 0
-      weaponSkillId: 0
-      weaponSkillDescription: 
-    remainUseCount: 0
-    position: {x: 0, y: 0}
-    rotation: 0
-    currentDurability: 0
-  subWeapon:
-    uniqueId: 
-    data:
-      id: 0
-      itemName: 
-      category: 0
-      maxUseCount: 0
-      consumeTurnOnUse: 0
-      canDrop: 1
-      effectDescription: 
-      icon: {fileID: 0}
-      statusId: 0
-      order: 0
-      shape: []
-      equipmentType: 0
-      maxDurability: 0
-      statModifier:
-        str: 0
-        dex: 0
-        con: 0
-        intelligence: 0
-        attackPower: 0
-        accuracyBonus: 0
-      weaponSkillId: 0
-      weaponSkillDescription: 
-    remainUseCount: 0
-    position: {x: 0, y: 0}
-    rotation: 0
-    currentDurability: 0
-  autoSaveEquipment: 1
 --- !u!1 &438017487
 GameObject:
   m_ObjectHideFlags: 0
@@ -5410,89 +5262,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 572850606}
   m_CullTransparentMesh: 1
---- !u!1 &573578031
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 573578032}
-  - component: {fileID: 573578033}
-  - component: {fileID: 573578034}
-  m_Layer: 0
-  m_Name: ItemDatabase
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &573578032
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 573578031}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1671662773}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &573578033
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 573578031}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 238f7e7d114380d45ab5370f11d30109, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  item1001BandageIcon: {fileID: 0}
-  item1002MiniMedicalKitIcon: {fileID: 0}
-  item1003FirstAidKitIcon: {fileID: 0}
-  item1004CannedFoodIcon: {fileID: 0}
-  item1005CombatRationIcon: {fileID: 0}
-  item1006SteakIcon: {fileID: 0}
-  item1007AlcoholIcon: {fileID: 0}
-  item1008SyringeIcon: {fileID: 0}
-  item1009RapidSedativeIcon: {fileID: 0}
-  item1010WaterBottleIcon: {fileID: 0}
-  item1011FlashlightIcon: {fileID: 0}
-  item1012TentIcon: {fileID: 0}
-  item1013BrickIcon: {fileID: 0}
-  item1014MolotovIcon: {fileID: 0}
-  item1015EnergyShieldIcon: {fileID: 0}
-  item1016ReinforcedEnergyShieldIcon: {fileID: 0}
-  item1017MagnetIcon: {fileID: 0}
-  item1018StimulantIcon: {fileID: 0}
-  item1019ModificationDeviceIcon: {fileID: 0}
-  item1020SolaStoneIcon: {fileID: 0}
-  item1021KeyIcon: {fileID: 0}
-  item1022SmokeBombIcon: {fileID: 0}
-  item1023InvisibilityDeviceIcon: {fileID: 0}
-  testWeaponIcon: {fileID: 21300000, guid: 5d7061fc7da05ce44add317708ec7215, type: 3}
-  testArmorIcon: {fileID: -6470460504253458178, guid: 04bc5d92c33544b4885101836c4d7d56, type: 3}
-  keyIcon: {fileID: 21300000, guid: 561e8b52894465a4aa5f66d23d6189ce, type: 3}
---- !u!114 &573578034
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 573578031}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b4e366c37f6e3c4aaac25b387df32ea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &582991978
 GameObject:
   m_ObjectHideFlags: 0
@@ -7615,7 +7384,6 @@ Transform:
   - {fileID: 1446980066}
   - {fileID: 1671662773}
   - {fileID: 942666937}
-  - {fileID: 436011799}
   - {fileID: 1784383633}
   - {fileID: 582991979}
   - {fileID: 1328733926}
@@ -7632,6 +7400,7 @@ Transform:
   - {fileID: 874037591}
   - {fileID: 4301000}
   - {fileID: 2126377525}
+  - {fileID: 427533909}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &846517665
@@ -11028,11 +10797,7 @@ MonoBehaviour:
   cutInController: {fileID: 956932503}
   playerUnit: {fileID: 1836735080}
   monsterPool:
-  - {fileID: 11400000, guid: edececc733e67cf4c82fff8aaf3903fe, type: 2}
-  - {fileID: 11400000, guid: e258fa3da8c0abc41a5a0e16c8b3e4cb, type: 2}
-  - {fileID: 11400000, guid: bbd859ed0f0f35441ad1ea9d4a6a4a74, type: 2}
   - {fileID: 11400000, guid: 0f4bc36640a6d1741b4489bd5c23350d, type: 2}
-  - {fileID: 11400000, guid: ca2ab17d0b6dc3d4bb23356b9b45e833, type: 2}
   enemyGroup: {fileID: 1557960058}
   enemySpawnPoints:
   - {fileID: 963636148}
@@ -12568,7 +12333,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca4e43f7316aa6349ac6930abd0f415f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tileDataCsv: {fileID: 4900000, guid: f78a94114c0ecd24784c93fff51031fc, type: 3}
+  tileDataCsv: {fileID: 4900000, guid: 6c3d805675e969743aee332f56c5999c, type: 3}
   dungeonMapDatabase: {fileID: 1790917462}
 --- !u!1 &1170730799
 GameObject:
@@ -17391,83 +17156,6 @@ RectTransform:
   m_AnchoredPosition: {x: 497, y: 340}
   m_SizeDelta: {x: 50, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &1670881759
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1670881760}
-  - component: {fileID: 1670881761}
-  m_Layer: 0
-  m_Name: InventoryManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1670881760
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1670881759}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1671662773}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1670881761
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1670881759}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fec1bfa1f81a0064495d63d2e05f4fed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  width: 8
-  height: 8
-  unlockedWidth: 8
-  unlockedHeight: 4
-  items:
-  - uniqueId: 
-    data:
-      id: 0
-      itemName: 
-      category: 0
-      maxUseCount: 0
-      consumeTurnOnUse: 0
-      canDrop: 0
-      effectDescription: 
-      icon: {fileID: 0}
-      statusId: 0
-      order: 0
-      shape: []
-      equipmentType: 0
-      maxDurability: 0
-      statModifier:
-        str: 0
-        dex: 0
-        con: 0
-        intelligence: 0
-        attackPower: 0
-        accuracyBonus: 0
-      weaponSkillId: 0
-      weaponSkillDescription: 
-    remainUseCount: 0
-    position: {x: 0, y: 0}
-    rotation: 0
-    currentDurability: 0
 --- !u!1 &1671662772
 GameObject:
   m_ObjectHideFlags: 0
@@ -17497,8 +17185,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 573578032}
-  - {fileID: 1670881760}
   - {fileID: 666536547}
   m_Father: {fileID: 818823549}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
