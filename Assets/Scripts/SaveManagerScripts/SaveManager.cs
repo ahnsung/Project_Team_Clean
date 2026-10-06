@@ -330,6 +330,41 @@ public class SaveManager : MonoBehaviour
         PlayerPrefs.DeleteKey("DUNGEON_FRESH_ENTRY");
 
 
+        // 새 게임 자원은 CharacterSelectScene에 PlayerResourceManager가 없어도
+        // 다음 씬에서 반드시 초기화되도록 요청 플래그 + 기존 저장값 삭제
+        PlayerResourceManager.RequestNewGameReset();
+
+
+        // =====================================================
+        // Solastone - New Game Reset
+        // =====================================================
+        // SolastoneManager는 DontDestroyOnLoad이므로 이전 게임의
+        // currentAmount가 메모리에 그대로 남아 있을 수 있다.
+        // PlayerPrefs 키만 지우지 않고 살아있는 인스턴스도 함께 초기화한다.
+        PlayerPrefs.DeleteKey("SOLASTONE_AMOUNT");
+
+        if (SolastoneManager.Instance != null)
+        {
+            SolastoneManager.Instance.ResetSolastone();
+        }
+
+
+        // =====================================================
+        // Shop - New Game Reset
+        // =====================================================
+        // ShopManager도 DontDestroyOnLoad이므로 저장 키만 지우면
+        // 이전 런타임의 레벨/재고가 메모리에 남을 수 있다.
+        PlayerPrefs.DeleteKey("SHOP_CURRENT_LEVEL");
+        PlayerPrefs.DeleteKey("SHOP_CURRENT_STOCK");
+        PlayerPrefs.DeleteKey("SHOP_INITIALIZED");
+        PlayerPrefs.DeleteKey("SHOP_VALID_INITIALIZATION");
+
+        if (ShopManager.Instance != null)
+        {
+            ShopManager.Instance.ResetShop();
+        }
+
+
         PlayerPrefs.Save();
 
 
@@ -1411,6 +1446,30 @@ public class SaveManager : MonoBehaviour
         PlayerPrefs.DeleteKey("DUNGEON_TURN");
         PlayerPrefs.DeleteKey("DUNGEON_ENVIRONMENT");
         PlayerPrefs.DeleteKey("DUNGEON_FRESH_ENTRY");
+
+        PlayerPrefs.DeleteKey("PLAYER_HEALTH");
+        PlayerPrefs.DeleteKey("PLAYER_MENTAL");
+        PlayerPrefs.DeleteKey("PLAYER_HUNGER");
+        PlayerPrefs.DeleteKey("PLAYER_LAST_PROCESSED_TURN");
+        PlayerPrefs.DeleteKey("PLAYER_NEW_GAME_RESOURCE_RESET");
+
+        // 솔라스톤 저장값도 전체 저장 삭제 시 제거
+        PlayerPrefs.DeleteKey("SOLASTONE_AMOUNT");
+
+        if (SolastoneManager.Instance != null)
+        {
+            SolastoneManager.Instance.ResetSolastone();
+        }
+
+        PlayerPrefs.DeleteKey("SHOP_CURRENT_LEVEL");
+        PlayerPrefs.DeleteKey("SHOP_CURRENT_STOCK");
+        PlayerPrefs.DeleteKey("SHOP_INITIALIZED");
+        PlayerPrefs.DeleteKey("SHOP_VALID_INITIALIZATION");
+
+        if (ShopManager.Instance != null)
+        {
+            ShopManager.Instance.ResetShop();
+        }
 
 
         PlayerPrefs.Save();

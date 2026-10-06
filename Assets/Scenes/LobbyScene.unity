@@ -2851,7 +2851,7 @@ MonoBehaviour:
   shopSlotPrefab: {fileID: 5246090820293146747, guid: 6c1012c4321504a448fc82510f4a04a7, type: 3}
   shopGridWidth: 8
   shopGridHeight: 5
-  shopCellSize: 60
+  shopCellSize: 90
   shopCellGap: 0
   shopGridOffset: {x: 0, y: 0}
   shopItemPrefab: {fileID: 5372404426943447833, guid: cbd47aeaafd2d214ca6c7fd35996e319, type: 3}

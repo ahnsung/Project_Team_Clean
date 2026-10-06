@@ -2142,9 +2142,9 @@ MonoBehaviour:
   maxHealth: 100
   maxMental: 100
   maxHunger: 100
-  currentHealth: 1
+  currentHealth: 100
   currentMental: 100
-  currentHunger: 70
+  currentHunger: 100
   mentalDecreaseTurnInterval: 5
   mentalDecreaseAmount: 5
   hungerDecreaseTurnInterval: 5

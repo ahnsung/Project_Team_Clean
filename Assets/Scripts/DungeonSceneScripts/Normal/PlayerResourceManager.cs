@@ -51,6 +51,9 @@ public class PlayerResourceManager : MonoBehaviour
     private const string LAST_PROCESSED_TURN_KEY =
         "PLAYER_LAST_PROCESSED_TURN";
 
+    private const string NEW_GAME_RESOURCE_RESET_KEY =
+        "PLAYER_NEW_GAME_RESOURCE_RESET";
+
     public int MaxHealth => maxHealth;
     public int MaxMental => maxMental;
     public int MaxHunger => maxHunger;
@@ -77,8 +80,39 @@ public class PlayerResourceManager : MonoBehaviour
          */
         ApplyMaxResourceFromStats(false);
 
-        Load();
-        ClampAll();
+        /*
+         * CharacterSelectScene에서 새 게임을 만든 시점에는
+         * PlayerResourceManager가 존재하지 않을 수 있다.
+         * 그 경우 SaveManager가 남겨 둔 New Game 리셋 플래그를
+         * 다음 PlayerResourceManager 생성 시 여기서 처리한다.
+         */
+        if (PlayerPrefs.GetInt(NEW_GAME_RESOURCE_RESET_KEY, 0) == 1)
+        {
+            PlayerPrefs.DeleteKey(HEALTH_KEY);
+            PlayerPrefs.DeleteKey(MENTAL_KEY);
+            PlayerPrefs.DeleteKey(HUNGER_KEY);
+            PlayerPrefs.DeleteKey(LAST_PROCESSED_TURN_KEY);
+            PlayerPrefs.DeleteKey(NEW_GAME_RESOURCE_RESET_KEY);
+            PlayerPrefs.Save();
+
+            currentHealth = maxHealth;
+            currentMental = maxMental;
+            currentHunger = maxHunger;
+            lastProcessedTurn = 0;
+
+            ClampAll();
+            Save();
+
+            Debug.Log(
+                "[Resource] 새 게임 진입 감지 - " +
+                "HP / Mental / Hunger 저장값 초기화 완료"
+            );
+        }
+        else
+        {
+            Load();
+            ClampAll();
+        }
     }
 
     private void Start()
@@ -523,6 +557,48 @@ public class PlayerResourceManager : MonoBehaviour
             $"(Mental {currentMental}/{maxMental}, " +
             $"Hunger {currentHunger}/{maxHunger} 유지)"
         );
+    }
+
+
+    public static void RequestNewGameReset()
+    {
+        /*
+         * 새 게임 생성 시 PlayerResourceManager가 아직 없어도
+         * 다음 씬의 Awake에서 반드시 초기화할 수 있게 표시한다.
+         */
+        PlayerPrefs.SetInt(
+            NEW_GAME_RESOURCE_RESET_KEY,
+            1
+        );
+
+        PlayerPrefs.DeleteKey(
+            HEALTH_KEY
+        );
+
+        PlayerPrefs.DeleteKey(
+            MENTAL_KEY
+        );
+
+        PlayerPrefs.DeleteKey(
+            HUNGER_KEY
+        );
+
+        PlayerPrefs.DeleteKey(
+            LAST_PROCESSED_TURN_KEY
+        );
+
+        PlayerPrefs.Save();
+
+        if (Instance != null)
+        {
+            Instance.ResetForNewGame(true);
+
+            PlayerPrefs.DeleteKey(
+                NEW_GAME_RESOURCE_RESET_KEY
+            );
+
+            PlayerPrefs.Save();
+        }
     }
 
 

@@ -3,185 +3,72 @@ using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
-    [Header("UI")]
     public GameObject continueButton;
     public GameObject warningPanel;
 
-
-    // =========================================================
-    // Unity
-    // =========================================================
-
-    private void Start()
+    void Start()
     {
-        RefreshContinueButton();
+        if (SaveManager.Instance != null && SaveManager.Instance.HasSave())
+            continueButton.SetActive(true);
+        else
+            continueButton.SetActive(false);
 
         if (warningPanel != null)
-        {
-            warningPanel.SetActive(
-                false
-            );
-        }
+            warningPanel.SetActive(false);
     }
 
-
-    // =========================================================
-    // Continue Button
-    // =========================================================
-
-    private void RefreshContinueButton()
-    {
-        if (continueButton == null)
-        {
-            return;
-        }
-
-        bool hasSave =
-            SaveManager.Instance != null &&
-            SaveManager.Instance.HasSave();
-
-        continueButton.SetActive(
-            hasSave
-        );
-    }
-
-
-    // =========================================================
-    // Continue
-    // =========================================================
-
+    // Continue 버튼
     public void ContinueGame()
     {
-        if (SaveManager.Instance == null)
+        if (SaveManager.Instance != null && SaveManager.Instance.HasSave())
         {
-            Debug.LogWarning(
-                "[MenuManager] SaveManager가 없습니다."
-            );
-
-            return;
+            SceneManager.LoadScene("LobbyScene");
         }
-
-
-        if (!SaveManager.Instance.HasSave())
-        {
-            Debug.Log(
-                "[MenuManager] Continue할 저장 데이터가 없습니다."
-            );
-
-            RefreshContinueButton();
-
-            return;
-        }
-
-
-        SceneManager.LoadScene(
-            "LobbyScene"
-        );
     }
 
-
-    // =========================================================
-    // New Game
-    // =========================================================
-
+    // New Game 버튼
     public void NewGame()
     {
-        bool hasSave =
-            SaveManager.Instance != null &&
-            SaveManager.Instance.HasSave();
-
-
-        // 기존 저장이 있으면 경고
-        if (hasSave)
+        if (SaveManager.Instance != null && SaveManager.Instance.HasSave())
         {
-            if (warningPanel != null)
-            {
-                warningPanel.SetActive(
-                    true
-                );
-            }
-
-            return;
+            // 저장 데이터가 있으면 경고창
+            warningPanel.SetActive(true);
         }
-
-
-        // 저장 자체가 없다면
-        // 바로 완전 초기화 후 새 게임
-        StartNewGame();
+        else
+        {
+            StartNewGameCutscene();
+        }
     }
 
-
-    // =========================================================
-    // Confirm New Game
-    // =========================================================
-
+    // 경고창 Yes
     public void ConfirmNewGame()
     {
-        StartNewGame();
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.DeleteSave();
+        }
+
+        warningPanel.SetActive(false);
+
+        StartNewGameCutscene();
     }
 
-
-    // =========================================================
-    // Cancel
-    // =========================================================
-
+    // 경고창 No
     public void CancelNewGame()
     {
-        if (warningPanel != null)
-        {
-            warningPanel.SetActive(
-                false
-            );
-        }
+        warningPanel.SetActive(false);
     }
 
-
-    // =========================================================
-    // Actual New Game
-    // =========================================================
-
-    private void StartNewGame()
+    // 캐릭터 선택 / 닉네임 생성 없이 새 게임 컷씬 시작
+    private void StartNewGameCutscene()
     {
-        Debug.Log(
-            "[MenuManager] 새 게임 시작"
-        );
+        // 이전 CharacterSelect용 플래그가 남아 있다면 제거
+        PlayerPrefs.DeleteKey("AfterCutsceneGoToCharacterSelect");
 
-
-        // =====================================================
-        // 이전 게임 완전 삭제
-        // =====================================================
-
-        NewGameResetManager
-            .ResetEverything();
-
-
-        // =====================================================
-        // 컷씬 종료 후 CharacterSelect로 이동하기 위한
-        // 1회용 플래그
-        // =====================================================
-        //
-        // ResetEverything()에서 DeleteAll을 했기 때문에
-        // 반드시 그 다음에 다시 만들어야 한다.
-        // =====================================================
-
-        PlayerPrefs.SetInt(
-            "AfterCutsceneGoToCharacterSelect",
-            1
-        );
-
+        // CutsceneManager가 새 게임 컷씬임을 구분하는 플래그
+        PlayerPrefs.SetInt("NewGameCutscene", 1);
         PlayerPrefs.Save();
 
-
-        if (warningPanel != null)
-        {
-            warningPanel.SetActive(
-                false
-            );
-        }
-
-
-        SceneManager.LoadScene(
-            "StartScene"
-        );
+        SceneManager.LoadScene("StartScene");
     }
 }

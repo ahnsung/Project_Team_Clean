@@ -50,6 +50,27 @@ public class ShopItemUI : MonoBehaviour, IPointerClickHandler
 
 
     // =========================================================
+    // Runtime Cell Size
+    // =========================================================
+
+    /// <summary>
+    /// ShopUIManager의 8x5 그리드 크기와
+    /// 상품/판매 아이템 Shape 크기를 동일하게 맞춘다.
+    /// </summary>
+    public void SetCellSize(
+        float newCellSize,
+        float newCellPadding)
+    {
+        cellSize = Mathf.Max(20f, newCellSize);
+        cellPadding = Mathf.Clamp(
+            newCellPadding,
+            0f,
+            cellSize - 1f
+        );
+    }
+
+
+    // =========================================================
     // Init - Buy
     // =========================================================
 
@@ -359,25 +380,34 @@ public class ShopItemUI : MonoBehaviour, IPointerClickHandler
             itemData == null)
         {
             Debug.LogWarning(
-                "[ShopItemUI] 상품 데이터가 없어 구매 확인창을 열 수 없습니다."
+                "[ShopItemUI] 상품 데이터가 없어 구매할 수 없습니다."
             );
 
             return;
         }
 
 
-        if (ShopUIManager.Instance == null)
+        // 이미 구매 처리 중이면 무시
+        if (isProcessingPurchase)
+            return;
+
+
+        if (ShopPurchaseManager.Instance == null)
         {
             Debug.LogError(
-                "[ShopItemUI] ShopUIManager.Instance가 없습니다."
+                "[ShopItemUI] " +
+                "ShopPurchaseManager.Instance가 없습니다."
             );
 
             return;
         }
+
+
+        isProcessingPurchase = true;
 
 
         Debug.Log(
-            "[ShopItemUI] 구매 상품 선택\n" +
+            "[ShopItemUI] 상품 구매 요청\n" +
             $"ShopItemId: {shopItemData.shopItemId}\n" +
             $"ItemId: {itemData.id}\n" +
             $"ItemName: {itemData.itemName}\n" +
@@ -385,12 +415,59 @@ public class ShopItemUI : MonoBehaviour, IPointerClickHandler
         );
 
 
-        // 실제 구매는 하지 않는다.
-        // 기획서대로 구매 상세 UI를 먼저 연다.
-        ShopUIManager.Instance.OpenBuyConfirm(
-            shopItemData,
-            itemData
+        // -----------------------------------------------------
+        // 실제 구매
+        // -----------------------------------------------------
+
+        bool purchaseSuccess =
+            ShopPurchaseManager.Instance.Purchase(
+                shopItemData.shopItemId
+            );
+
+
+        // -----------------------------------------------------
+        // 구매 실패
+        // -----------------------------------------------------
+
+        if (!purchaseSuccess)
+        {
+            Debug.Log(
+                "[ShopItemUI] 구매 실패\n" +
+                $"ShopItemId: {shopItemData.shopItemId}"
+            );
+
+            isProcessingPurchase = false;
+
+            return;
+        }
+
+
+        // -----------------------------------------------------
+        // 구매 성공
+        // -----------------------------------------------------
+
+        Debug.Log(
+            "[ShopItemUI] 구매 성공\n" +
+            $"ShopItemId: {shopItemData.shopItemId}\n" +
+            $"ItemId: {itemData.id}"
         );
+
+
+        // ShopPurchaseManager에서 이미
+        // 해당 ShopItemId 재고를 제거했으므로
+        // 현재 재고를 기준으로 UI를 다시 만든다.
+        if (ShopUIManager.Instance != null)
+        {
+            ShopUIManager.Instance.RefreshItemDisplay();
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[ShopItemUI] " +
+                "ShopUIManager.Instance가 없어 " +
+                "상점 UI를 즉시 갱신하지 못했습니다."
+            );
+        }
     }
 
 

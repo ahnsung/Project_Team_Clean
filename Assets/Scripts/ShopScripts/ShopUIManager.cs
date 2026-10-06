@@ -55,11 +55,12 @@ public class ShopUIManager : MonoBehaviour
     [SerializeField]
     private int shopGridHeight = 5;
 
-    [SerializeField]
-    private float shopCellSize = 60f;
+    [Header("Shop Grid Size - Inspector에서 직접 조절")]
+    [Min(20f)]
+    public float shopCellSize = 110f;
 
-    [SerializeField]
-    private float shopCellGap = 0f;
+    [Min(0f)]
+    public float shopCellGap = 4f;
 
     [SerializeField]
     private Vector2 shopGridOffset = Vector2.zero;
@@ -119,9 +120,6 @@ public class ShopUIManager : MonoBehaviour
     private ShopItemData selectedBuyShopItem;
     private ItemData selectedBuyItemData;
 
-    // 판매 모드에서 현재 선택한 실제 인벤토리 아이템
-    private InventoryItem selectedSellInventoryItem;
-
     private readonly List<ShopItemUI> spawnedShopItems =
         new List<ShopItemUI>();
 
@@ -154,6 +152,8 @@ public class ShopUIManager : MonoBehaviour
         }
 
         Instance = this;
+
+        // shopCellSize / shopCellGap은 Inspector에서 설정한 값을 그대로 사용한다.
     }
 
 
@@ -302,58 +302,12 @@ public class ShopUIManager : MonoBehaviour
 
 
     // =========================================================
-    // Confirm Button Text
-    // =========================================================
-
-    /// <summary>
-    /// BuyConfirmPanel 안의 BuyButton 텍스트를
-    /// 현재 동작에 맞게 구매/판매로 바꾼다.
-    /// Inspector에 별도 TMP_Text 연결이 없어도 동작한다.
-    /// </summary>
-    private void SetConfirmButtonText(string text)
-    {
-        if (buyConfirmPanel == null)
-            return;
-
-        Transform buyButtonTransform =
-            buyConfirmPanel.transform.Find("BuyButton");
-
-        if (buyButtonTransform == null)
-        {
-            Debug.LogWarning(
-                "[ShopUIManager] BuyConfirmPanel 아래에서 BuyButton을 찾지 못했습니다."
-            );
-            return;
-        }
-
-        TMP_Text buttonText =
-            buyButtonTransform.GetComponentInChildren<TMP_Text>(
-                true
-            );
-
-        if (buttonText == null)
-        {
-            Debug.LogWarning(
-                "[ShopUIManager] BuyButton 아래에서 TMP_Text를 찾지 못했습니다."
-            );
-            return;
-        }
-
-        buttonText.text = text;
-    }
-
-
-    // =========================================================
     // Buy Confirm
     // =========================================================
 
     /// <summary>
     /// 구매 상품을 클릭했을 때 기획서의 구매 상세 UI를 연다.
     /// 실제 구매는 여기서 하지 않고 ConfirmPurchase()에서 처리한다.
-    /// </summary>
-    /// <summary>
-    /// ShopInventoryItemUI에서 선택한 구매 상품을
-    /// 기존 구매 확인 UI로 전달한다.
     /// </summary>
     public void SelectBuyItem(
         ShopItemData shopItem,
@@ -407,8 +361,6 @@ public class ShopUIManager : MonoBehaviour
                 item.buyPrice.ToString();
         }
 
-        SetConfirmButtonText("구매");
-
         buyConfirmPanel.SetActive(true);
 
         Debug.Log(
@@ -428,7 +380,6 @@ public class ShopUIManager : MonoBehaviour
     {
         selectedBuyShopItem = null;
         selectedBuyItemData = null;
-        selectedSellInventoryItem = null;
 
         if (buyConfirmPanel != null)
         {
@@ -443,14 +394,6 @@ public class ShopUIManager : MonoBehaviour
     /// </summary>
     public void ConfirmPurchase()
     {
-        // 기존 BuyConfirmPanel의 구매 버튼 OnClick 연결을 그대로 사용한다.
-        // 판매 모드에서는 같은 버튼이 판매 확정 버튼으로 동작한다.
-        if (currentMode == ShopMode.Sell)
-        {
-            ConfirmSale();
-            return;
-        }
-
         if (selectedBuyShopItem == null || selectedBuyItemData == null)
         {
             Debug.LogWarning("[ShopUIManager] 선택된 구매 상품이 없습니다.");
@@ -507,191 +450,6 @@ public class ShopUIManager : MonoBehaviour
         RefreshItemDisplay();
 
         ShowNotice($"“{itemName}”을 구매했습니다.", false);
-    }
-
-
-    // =========================================================
-    // Sell Confirm
-    // =========================================================
-
-    /// <summary>
-    /// 판매 화면의 실제 InventoryItem을 클릭했을 때 호출한다.
-    /// sellPrice가 0 이하인 아이템은 확인창을 열지 않는다.
-    /// </summary>
-    public void SelectSellItem(InventoryItem inventoryItem)
-    {
-        if (currentMode != ShopMode.Sell)
-            return;
-
-        if (inventoryItem == null ||
-            inventoryItem.data == null)
-        {
-            return;
-        }
-
-        ItemData itemData =
-            inventoryItem.data;
-
-        if (itemData.sellPrice <= 0)
-        {
-            ShowNotice(
-                "판매할 수 없는 아이템입니다.",
-                true
-            );
-            return;
-        }
-
-        if (InventoryManager.Instance == null ||
-            !InventoryManager.Instance.ContainsItem(inventoryItem))
-        {
-            ShowNotice(
-                "인벤토리에 존재하지 않는 아이템입니다.",
-                true
-            );
-
-            RefreshItemDisplay();
-            return;
-        }
-
-        if (buyConfirmPanel == null)
-        {
-            Debug.LogError(
-                "[ShopUIManager] BuyConfirmPanel이 연결되어 있지 않습니다."
-            );
-            return;
-        }
-
-        selectedBuyShopItem = null;
-        selectedBuyItemData = null;
-        selectedSellInventoryItem =
-            inventoryItem;
-
-        if (buyConfirmItemNameText != null)
-        {
-            buyConfirmItemNameText.text =
-                itemData.itemName;
-        }
-
-        if (buyConfirmDescriptionText != null)
-        {
-            buyConfirmDescriptionText.text =
-                itemData.effectDescription;
-        }
-
-        if (buyConfirmPriceText != null)
-        {
-            buyConfirmPriceText.text =
-                itemData.sellPrice.ToString();
-        }
-
-        SetConfirmButtonText("판매");
-
-        buyConfirmPanel.SetActive(true);
-
-        Debug.Log(
-            "[ShopUIManager] 판매 확인 UI 열기\n" +
-            $"ItemId: {itemData.id}\n" +
-            $"ItemName: {itemData.itemName}\n" +
-            $"SellPrice: {itemData.sellPrice}"
-        );
-    }
-
-
-    /// <summary>
-    /// 판매 확인창의 기존 구매 버튼을 눌렀을 때
-    /// 판매 모드라면 여기로 들어온다.
-    /// </summary>
-    private void ConfirmSale()
-    {
-        if (selectedSellInventoryItem == null ||
-            selectedSellInventoryItem.data == null)
-        {
-            Debug.LogWarning(
-                "[ShopUIManager] 선택된 판매 아이템이 없습니다."
-            );
-            return;
-        }
-
-        if (InventoryManager.Instance == null)
-        {
-            Debug.LogError(
-                "[ShopUIManager] InventoryManager.Instance가 없습니다."
-            );
-            return;
-        }
-
-        if (SolastoneManager.Instance == null)
-        {
-            Debug.LogError(
-                "[ShopUIManager] SolastoneManager.Instance가 없습니다."
-            );
-            return;
-        }
-
-        InventoryItem soldItem =
-            selectedSellInventoryItem;
-
-        ItemData itemData =
-            soldItem.data;
-
-        int sellPrice =
-            itemData.sellPrice;
-
-        if (sellPrice <= 0)
-        {
-            CloseBuyConfirm();
-
-            ShowNotice(
-                "판매할 수 없는 아이템입니다.",
-                true
-            );
-            return;
-        }
-
-        if (!InventoryManager.Instance.ContainsItem(soldItem))
-        {
-            CloseBuyConfirm();
-
-            ShowNotice(
-                "인벤토리에 존재하지 않는 아이템입니다.",
-                true
-            );
-
-            RefreshItemDisplay();
-            return;
-        }
-
-        string itemName =
-            itemData.itemName;
-
-        int itemId =
-            itemData.id;
-
-        // 기획대로 판매한 아이템은 상점 재고로 돌아가지 않는다.
-        InventoryManager.Instance.RemoveItem(
-            soldItem
-        );
-
-        SolastoneManager.Instance.Add(
-            sellPrice
-        );
-
-        Debug.Log(
-            "[ShopUIManager] 판매 완료\n" +
-            $"ItemId: {itemId}\n" +
-            $"ItemName: {itemName}\n" +
-            $"SellPrice: {sellPrice}\n" +
-            $"Current Solastone: {SolastoneManager.Instance.CurrentAmount}"
-        );
-
-        CloseBuyConfirm();
-        RefreshSolastone();
-        RefreshItemDisplay();
-
-        ShowNotice(
-            $"“{itemName}”을 판매했습니다.",
-            false
-        );
     }
 
 
@@ -779,6 +537,14 @@ public class ShopUIManager : MonoBehaviour
         {
             Debug.LogError(
                 "[ShopUIManager] ShopGridRoot(Item Grid)가 연결되어 있지 않습니다."
+            );
+            return;
+        }
+
+        if (shopSlotPrefab == null)
+        {
+            Debug.LogError(
+                "[ShopUIManager] Shop Slot Prefab이 연결되어 있지 않습니다."
             );
             return;
         }
@@ -879,113 +645,88 @@ public class ShopUIManager : MonoBehaviour
 
     private void BuildShopSlots()
     {
-        if (itemGrid == null)
-            return;
-
         int width = Mathf.Max(1, shopGridWidth);
         int height = Mathf.Max(1, shopGridHeight);
 
-        float step = shopCellSize + shopCellGap;
-
-        // ShopGridRoot의 크기/Anchor/Pivot 상태와 무관하게
-        // 8x5 그리드 전체를 자기 중심 기준으로 직접 배치한다.
-        float totalWidth =
+        // 구매 인벤토리의 실제 8x5 배경 크기를 그리드 크기에 맞춘다.
+        // 슬롯 배경(shopSlotPrefab)이 화면 뒤에 정상적으로 보이도록 한다.
+        float gridWidth =
             width * shopCellSize +
-            (width - 1) * shopCellGap;
+            Mathf.Max(0, width - 1) * shopCellGap;
 
-        float totalHeight =
+        float gridHeight =
             height * shopCellSize +
-            (height - 1) * shopCellGap;
+            Mathf.Max(0, height - 1) * shopCellGap;
 
-        float startX =
-            -totalWidth / 2f +
-            shopCellSize / 2f +
-            shopGridOffset.x;
+        itemGrid.SetSizeWithCurrentAnchors(
+            RectTransform.Axis.Horizontal,
+            gridWidth
+        );
 
-        float startY =
-            totalHeight / 2f -
-            shopCellSize / 2f +
-            shopGridOffset.y;
+        itemGrid.SetSizeWithCurrentAnchors(
+            RectTransform.Axis.Vertical,
+            gridHeight
+        );
+
+        itemGrid.anchorMin = new Vector2(0.5f, 0.5f);
+        itemGrid.anchorMax = new Vector2(0.5f, 0.5f);
+        itemGrid.pivot = new Vector2(0.5f, 0.5f);
+        itemGrid.anchoredPosition = shopGridOffset;
 
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
                 GameObject slot =
-                    new GameObject(
-                        "ShopSlot_" + x + "_" + y,
-                        typeof(RectTransform),
-                        typeof(CanvasRenderer),
-                        typeof(Image)
+                    Instantiate(
+                        shopSlotPrefab,
+                        itemGrid
                     );
 
-                slot.transform.SetParent(
-                    itemGrid,
-                    false
-                );
+                slot.name =
+                    "ShopSlot_" + x + "_" + y;
 
                 RectTransform rect =
                     slot.GetComponent<RectTransform>();
 
-                rect.anchorMin =
-                    new Vector2(0.5f, 0.5f);
+                if (rect != null)
+                {
+                    rect.anchorMin =
+                        new Vector2(0.5f, 0.5f);
+                    rect.anchorMax =
+                        new Vector2(0.5f, 0.5f);
+                    rect.pivot =
+                        new Vector2(0.5f, 0.5f);
+                    rect.sizeDelta =
+                        new Vector2(
+                            shopCellSize,
+                            shopCellSize
+                        );
+                    rect.anchoredPosition =
+                        ShopCellToLocalPosition(
+                            new Vector2Int(x, y)
+                        );
+                }
 
-                rect.anchorMax =
-                    new Vector2(0.5f, 0.5f);
+                InventorySlotUI inventorySlot =
+                    slot.GetComponent<InventorySlotUI>();
 
-                rect.pivot =
-                    new Vector2(0.5f, 0.5f);
-
-                rect.sizeDelta =
-                    new Vector2(
-                        shopCellSize,
-                        shopCellSize
-                    );
-
-                rect.anchoredPosition =
-                    new Vector2(
-                        startX + x * step,
-                        startY - y * step
-                    );
+                if (inventorySlot != null)
+                {
+                    inventorySlot.enabled = false;
+                }
 
                 Image image =
                     slot.GetComponent<Image>();
 
-                // 기획서의 어두운 인벤토리 칸처럼 보이도록
-                // 별도 Sprite 없이 색만 사용한다.
-                image.sprite = null;
-                image.color =
-                    new Color(
-                        0.12f,
-                        0.12f,
-                        0.12f,
-                        0.72f
-                    );
-
-                image.raycastTarget = false;
-
-                Outline outline =
-                    slot.AddComponent<Outline>();
-
-                outline.effectColor =
-                    new Color(
-                        0f,
-                        0f,
-                        0f,
-                        0.9f
-                    );
-
-                outline.effectDistance =
-                    new Vector2(1f, -1f);
+                if (image != null)
+                {
+                    image.raycastTarget = false;
+                }
 
                 spawnedShopSlots.Add(slot);
             }
         }
-
-        Debug.Log(
-            "[ShopUIManager] 상점 전용 슬롯 생성 완료: " +
-            (width * height)
-        );
     }
 
 
@@ -1201,34 +942,26 @@ public class ShopUIManager : MonoBehaviour
     private Vector2 ShopCellToLocalPosition(
         Vector2Int cell)
     {
-        int width = Mathf.Max(1, shopGridWidth);
-        int height = Mathf.Max(1, shopGridHeight);
+        if (itemGrid == null)
+            return Vector2.zero;
+
+        Rect rect =
+            itemGrid.rect;
 
         float step =
             shopCellSize + shopCellGap;
 
-        float totalWidth =
-            width * shopCellSize +
-            (width - 1) * shopCellGap;
-
-        float totalHeight =
-            height * shopCellSize +
-            (height - 1) * shopCellGap;
-
-        float startX =
-            -totalWidth / 2f +
+        float x =
+            rect.xMin +
             shopCellSize / 2f +
-            shopGridOffset.x;
+            cell.x * step;
 
-        float startY =
-            totalHeight / 2f -
-            shopCellSize / 2f +
-            shopGridOffset.y;
+        float y =
+            rect.yMax -
+            shopCellSize / 2f -
+            cell.y * step;
 
-        return new Vector2(
-            startX + cell.x * step,
-            startY - cell.y * step
-        );
+        return new Vector2(x, y);
     }
 
 
@@ -1253,6 +986,14 @@ public class ShopUIManager : MonoBehaviour
             return;
         }
 
+        if (shopItemPrefab == null)
+        {
+            Debug.LogError(
+                "[ShopUIManager] ShopItemPrefab이 연결되어 있지 않습니다."
+            );
+            return;
+        }
+
         if (InventoryManager.Instance == null)
         {
             Debug.LogError(
@@ -1261,10 +1002,7 @@ public class ShopUIManager : MonoBehaviour
             return;
         }
 
-        // -----------------------------------------------------
-        // 판매 화면도 구매 화면과 같은 8x5 슬롯을 사용한다.
-        // 기존 ShopItemUI 카드 목록은 더 이상 만들지 않는다.
-        // -----------------------------------------------------
+        // 구매 화면과 완전히 같은 8x5 배경 슬롯을 먼저 만든다.
         BuildShopSlots();
 
         List<InventoryItem> inventoryItems =
@@ -1274,167 +1012,137 @@ public class ShopUIManager : MonoBehaviour
             inventoryItems.Count == 0)
         {
             Debug.Log(
-                "[ShopUIManager] 판매 화면 인벤토리 표시 완료 / 아이템 0개"
+                "[ShopUIManager] 판매 화면 인벤토리가 비어 있습니다."
             );
             return;
         }
 
-        int createdItemCount = 0;
-        int createdCellCount = 0;
-        int skippedCount = 0;
+        int createdCount = 0;
 
         foreach (InventoryItem inventoryItem in inventoryItems)
         {
             if (inventoryItem == null ||
                 inventoryItem.data == null)
             {
-                skippedCount++;
                 continue;
             }
 
-            ItemData itemData =
-                inventoryItem.data;
-
-            // 중요:
-            // sellPrice == 0이어도 플레이어 인벤토리에서는 숨기지 않는다.
-            // 현재 단계에서는 실제 인벤토리 모양을 그대로 보여주는 것만 한다.
-            //
-            // GetOccupiedCells(position)은 InventoryItem의 현재 rotation을
-            // 반영한 실제 점유 칸을 돌려주므로 별도로 회전 계산하지 않는다.
-            List<Vector2Int> occupiedCells =
-                inventoryItem.GetOccupiedCells(
-                    inventoryItem.position
+            // 판매 불가 아이템도 인벤토리에는 보이게 한다.
+            // 실제 클릭 시 ShopItemUI가 sellPrice <= 0을 검사한다.
+            ShopItemUI ui =
+                Instantiate(
+                    shopItemPrefab,
+                    itemGrid
                 );
 
-            if (occupiedCells == null ||
-                occupiedCells.Count == 0)
-            {
-                skippedCount++;
-                continue;
-            }
+            ui.gameObject.SetActive(true);
 
-            foreach (Vector2Int cell in occupiedCells)
-            {
-                // 저장 데이터가 잘못되어 인벤토리 범위를 벗어난 경우
-                // UI가 화면 밖에 생기지 않도록 건너뛴다.
-                if (cell.x < 0 ||
-                    cell.x >= shopGridWidth ||
-                    cell.y < 0 ||
-                    cell.y >= shopGridHeight)
-                {
-                    Debug.LogWarning(
-                        "[ShopUIManager] 판매 화면 아이템 점유 칀이 " +
-                        "상점 그리드 범위를 벗어났습니다.\n" +
-                        $"ItemId: {itemData.id}\n" +
-                        $"ItemName: {itemData.itemName}\n" +
-                        $"Cell: {cell}"
-                    );
+            ui.name =
+                "SellInventoryItem_" +
+                inventoryItem.data.id +
+                "_" +
+                createdCount;
 
-                    continue;
-                }
+            // 상점 8x5 칸 크기와 아이템 Shape 크기를 동일하게 맞춘다.
+            ui.SetCellSize(
+                shopCellSize,
+                Mathf.Min(6f, shopCellSize * 0.08f)
+            );
 
-                GameObject cellObject =
-                    new GameObject(
-                        "SellInventoryCell_" +
-                        itemData.id + "_" +
-                        cell.x + "_" +
-                        cell.y,
-                        typeof(RectTransform),
-                        typeof(CanvasRenderer),
-                        typeof(Image),
-                        typeof(Button)
-                    );
+            ui.InitSell(
+                inventoryItem
+            );
 
-                cellObject.transform.SetParent(
-                    itemGrid,
-                    false
-                );
+            PositionInventorySellItem(
+                ui.GetComponent<RectTransform>(),
+                inventoryItem
+            );
 
-                RectTransform rect =
-                    cellObject.GetComponent<RectTransform>();
-
-                rect.anchorMin =
-                    new Vector2(0.5f, 0.5f);
-                rect.anchorMax =
-                    new Vector2(0.5f, 0.5f);
-                rect.pivot =
-                    new Vector2(0.5f, 0.5f);
-
-                // 기존 InventoryItemUI가 셀보다 6 작게 그리던 방식과 동일
-                float visualCellSize =
-                    Mathf.Max(1f, shopCellSize - 6f);
-
-                rect.sizeDelta =
-                    new Vector2(
-                        visualCellSize,
-                        visualCellSize
-                    );
-
-                rect.anchoredPosition =
-                    ShopCellToLocalPosition(cell);
-
-                Image image =
-                    cellObject.GetComponent<Image>();
-
-                image.sprite =
-                    itemData.icon;
-
-                image.preserveAspect = true;
-
-                image.color = Color.white;
-
-                // 판매 화면에서는 드래그하지 않고 클릭만 받는다.
-                image.raycastTarget = true;
-
-                Button button =
-                    cellObject.GetComponent<Button>();
-
-                button.transition =
-                    Selectable.Transition.None;
-
-                InventoryItem capturedItem =
-                    inventoryItem;
-
-                button.onClick.AddListener(
-                    () => SelectSellItem(capturedItem)
-                );
-
-                Outline outline =
-                    cellObject.AddComponent<Outline>();
-
-                outline.effectColor =
-                    new Color(
-                        0f,
-                        0f,
-                        0f,
-                        0.8f
-                    );
-
-                outline.effectDistance =
-                    new Vector2(1f, -1f);
-
-                // ClearItemDisplay()에서 함께 정리되도록
-                // 기존 슬롯 리스트에 등록한다.
-                spawnedShopSlots.Add(
-                    cellObject
-                );
-
-                cellObject.transform.SetAsLastSibling();
-
-                createdCellCount++;
-            }
-
-            createdItemCount++;
+            spawnedShopItems.Add(ui);
+            createdCount++;
         }
 
         Debug.Log(
-            "[ShopUIManager] 판매 화면 실제 인벤토리 표시 완료\n" +
-            $"인벤토리 전체 아이템: {inventoryItems.Count}\n" +
-            $"표시 아이템: {createdItemCount}\n" +
-            $"표시 Shape 셀: {createdCellCount}\n" +
-            $"잘못된 데이터: {skippedCount}"
+            "[ShopUIManager] 판매 화면 8x5 인벤토리 생성 완료\n" +
+            $"현재 인벤토리 아이템: {createdCount}"
         );
     }
+
+
+    private void PositionInventorySellItem(
+        RectTransform rect,
+        InventoryItem inventoryItem)
+    {
+        if (rect == null ||
+            inventoryItem == null ||
+            inventoryItem.data == null)
+        {
+            return;
+        }
+
+        int width = 1;
+        int height = 1;
+
+        if (inventoryItem.data.shape != null &&
+            inventoryItem.data.shape.Count > 0)
+        {
+            int maxX = 0;
+            int maxY = 0;
+
+            foreach (Vector2Int cell in inventoryItem.data.shape)
+            {
+                if (cell.x > maxX) maxX = cell.x;
+                if (cell.y > maxY) maxY = cell.y;
+            }
+
+            width = maxX + 1;
+            height = maxY + 1;
+        }
+
+        float step =
+            shopCellSize + shopCellGap;
+
+        Rect gridRect =
+            itemGrid.rect;
+
+        float startX =
+            gridRect.xMin +
+            shopCellSize / 2f;
+
+        float startY =
+            gridRect.yMax -
+            shopCellSize / 2f;
+
+        rect.anchorMin =
+            new Vector2(0.5f, 0.5f);
+
+        rect.anchorMax =
+            new Vector2(0.5f, 0.5f);
+
+        rect.pivot =
+            new Vector2(0.5f, 0.5f);
+
+        rect.sizeDelta =
+            new Vector2(
+                width * shopCellSize +
+                Mathf.Max(0, width - 1) * shopCellGap,
+
+                height * shopCellSize +
+                Mathf.Max(0, height - 1) * shopCellGap
+            );
+
+        rect.anchoredPosition =
+            new Vector2(
+                startX +
+                inventoryItem.position.x * step +
+                (width - 1) * step * 0.5f,
+
+                startY -
+                inventoryItem.position.y * step -
+                (height - 1) * step * 0.5f
+            );
+    }
+
 
     private void RelayoutSpawnedItems()
     {
