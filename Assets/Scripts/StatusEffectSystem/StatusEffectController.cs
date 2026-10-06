@@ -566,6 +566,15 @@ public class StatusEffectController : MonoBehaviour
             int power =
                 effect.Data.effectPower;
 
+            // 2134 - 받는 데미지 증가
+            // 원본 상태이상 테이블의 effect_power = 2는 +2%가 아니라 x2 의미.
+            // 다른 DamageTakenUp 상태의 퍼센트 계산은 그대로 유지한다.
+            if (effect.Data.id == 2134)
+            {
+                multiplier *= Mathf.Max(0f, power);
+                continue;
+            }
+
             switch (
                 effect.Data.effectType)
             {

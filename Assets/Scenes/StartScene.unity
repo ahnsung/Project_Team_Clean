@@ -932,7 +932,7 @@ MonoBehaviour:
   item1006SteakIcon: {fileID: 1308169304806764636, guid: 3f89a5539dc13564d8053fd49bdbdea5, type: 3}
   item1007AlcoholIcon: {fileID: 1263162035050427777, guid: b252eae7ba4232c478c9d3438d0921ab, type: 3}
   item1008SyringeIcon: {fileID: -7690621353907966358, guid: b96394f45ea03c5449dcb37e5f082b14, type: 3}
-  item1009RapidSedativeIcon: {fileID: 0}
+  item1009RapidSedativeIcon: {fileID: 8911601412585316765, guid: b4c9c2c8f10432347b0469a22f64c6da, type: 3}
   item1010WaterBottleIcon: {fileID: 382873177824017205, guid: a4a8d860a015c1442867dd34f9fde218, type: 3}
   item1011FlashlightIcon: {fileID: -4169612516448633588, guid: fe0a84bcbe063354b96bc531d2400c49, type: 3}
   item1012TentIcon: {fileID: 0}
@@ -941,16 +941,16 @@ MonoBehaviour:
   item1015EnergyShieldIcon: {fileID: -8363867143247870898, guid: 86e35ffa2a7950d408dde20c926ddbb7, type: 3}
   item1016ReinforcedEnergyShieldIcon: {fileID: -3796092487880598992, guid: 1576d150d54506940a80bc951c17979c, type: 3}
   item1017MagnetIcon: {fileID: 0}
-  item1018StimulantIcon: {fileID: 0}
-  item1019ModificationDeviceIcon: {fileID: 0}
-  item1020SolaStoneIcon: {fileID: 0}
-  item1021KeyIcon: {fileID: 0}
+  item1018StimulantIcon: {fileID: 7377650033633928238, guid: 8264feee719027c418f967631337141b, type: 3}
+  item1019ModificationDeviceIcon: {fileID: 1852194308567801216, guid: d0691ff8c51bb6a4088c9a3327812fce, type: 3}
+  item1020SolaStoneIcon: {fileID: 92626092099305506, guid: f8fca1cb8efdfbb43b7da5fa2cf518ec, type: 3}
+  item1021KeyIcon: {fileID: 8358606362116278640, guid: e88b9f7a8fdc7a2438f6adfe6e5a6e39, type: 3}
   item1022SmokeBombIcon: {fileID: 0}
   item1023InvisibilityDeviceIcon: {fileID: 0}
-  item1109RustyDaggerIcon: {fileID: 0}
-  item1110RustyAxeIcon: {fileID: 0}
-  item1111CraftedDaggerIcon: {fileID: 0}
-  item1112RustyPistolIcon: {fileID: 0}
+  item1109RustyDaggerIcon: {fileID: -4452770503847893061, guid: 4a3a5ba9232906f44afbf58f2b066bbc, type: 3}
+  item1110RustyAxeIcon: {fileID: 6011455464890812396, guid: 796cd1d6b431487498ea46a986d45ee6, type: 3}
+  item1111CraftedDaggerIcon: {fileID: -7874505667446385164, guid: 32acfd64b0d07a848b571178e022fd2e, type: 3}
+  item1112RustyPistolIcon: {fileID: 2485382302036460270, guid: 6d36ffd58c1f36e45ae7e4daf34d7c9f, type: 3}
   testWeaponIcon: {fileID: 2539128824126750589, guid: a3c12cfdbf351074ea83399c548a5968, type: 3}
   testArmorIcon: {fileID: 6567735013469235369, guid: 36cd367fdc4a33a4489bc6f889ff2ecb, type: 3}
   keyIcon: {fileID: 8358606362116278640, guid: e88b9f7a8fdc7a2438f6adfe6e5a6e39, type: 3}

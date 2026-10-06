@@ -266,6 +266,107 @@ public class EnemyPatternDatabase : MonoBehaviour
         );
 
 
+        // -----------------------------------------------------
+        // Enemy 3004
+        // -----------------------------------------------------
+
+        // 5030 - 기본 공격
+        // 엑셀의 Effect_Type 칸은 비어 있지만 설명이 "기본 공격"이므로
+        // 기존 기본 공격 실행 타입인 0으로 등록한다.
+        RegisterPattern(
+            enemyId: 3004,
+            patternId: 5030,
+            patternName: "기본 공격",
+            patternPossibility: 50,
+            condition: 0,
+            hp: 0,
+            beforePatternId: 0,
+            effectType: 0,
+            effectPower: 0f,
+            statusId: 0,
+            order: 0,
+            target: 0
+        );
+
+        // 5031 - 묶기
+        // 일반 패턴 / 50%
+        // Status 2133 = 도망 확률 감소
+        RegisterPattern(
+            enemyId: 3004,
+            patternId: 5031,
+            patternName: "묶기",
+            patternPossibility: 50,
+            condition: 0,
+            hp: 0,
+            beforePatternId: 0,
+            effectType: 17,
+            effectPower: 0f,
+            statusId: 2133,
+            order: 0,
+            target: 0
+        );
+
+        // 5032 - 돌격
+        // 5031 다음에 발동하는 연계 패턴.
+        // 같은 Pattern_ID에 두 효과가 존재한다.
+        // Order 0: 강한 공격 (Effect_Type 1 / Power 30)
+        RegisterPattern(
+            enemyId: 3004,
+            patternId: 5032,
+            patternName: "돌격",
+            patternPossibility: 0,
+            condition: 1,
+            hp: 0,
+            beforePatternId: 5031,
+            effectType: 1,
+            effectPower: 30f,
+            statusId: 0,
+            order: 0,
+            target: 0
+        );
+
+        // 5032 - 돌격
+        // Order 1: 적 자신에게 Status 2134 = 받는 데미지 증가
+        RegisterPattern(
+            enemyId: 3004,
+            patternId: 5032,
+            patternName: "돌격",
+            patternPossibility: 0,
+            condition: 1,
+            hp: 0,
+            beforePatternId: 5031,
+            effectType: 17,
+            effectPower: 0f,
+            statusId: 2134,
+            order: 1,
+            target: 1
+        );
+
+
+        // -----------------------------------------------------
+        // Enemy 3005 - 보스
+        // -----------------------------------------------------
+
+        // 5033 - 기본 공격
+        // 일반 패턴 / 100%
+        // Effect_Type 0 = 적이 가진 공격력으로 공격
+        // Target 0 = 플레이어
+        RegisterPattern(
+            enemyId: 3005,
+            patternId: 5033,
+            patternName: "기본 공격",
+            patternPossibility: 100,
+            condition: 0,
+            hp: 0,
+            beforePatternId: 0,
+            effectType: 0,
+            effectPower: 0f,
+            statusId: 0,
+            order: 0,
+            target: 0
+        );
+
+
         Debug.Log(
             "[EnemyPatternDatabase] 기본 패턴 데이터 등록 완료." +
             " 총 행 수: " +

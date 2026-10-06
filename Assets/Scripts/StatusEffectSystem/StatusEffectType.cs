@@ -60,5 +60,8 @@ public enum StatusEffectType
     BattleEncounterRateUp = 46,
 
     // 아이템 획득량/확률
-    ItemAcquisitionUp = 47
+    ItemAcquisitionUp = 47,
+
+    // 도망 확률 감소
+    EscapeChanceDown = 48
 }

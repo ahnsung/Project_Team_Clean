@@ -114,6 +114,9 @@ public static class StatusEffectTypeMapper
             case 28:
                 return StatusEffectType.DamageTakenDown;
 
+            case 29:
+                return StatusEffectType.EscapeChanceDown;
+
             default:
                 Debug.LogWarning(
                     "[StatusEffectTypeMapper] " +
@@ -131,7 +134,7 @@ public static class StatusEffectTypeMapper
     {
         return
             tableEffectType >= 0 &&
-            tableEffectType <= 28;
+            tableEffectType <= 29;
     }
 
 
@@ -400,6 +403,7 @@ public static class StatusEffectTypeMapper
             case 26: return "명중률";
             case 27: return "공격력 증가";
             case 28: return "받는 데미지 감소";
+            case 29: return "도망 확률 감소";
 
             default:
                 return "알 수 없음";

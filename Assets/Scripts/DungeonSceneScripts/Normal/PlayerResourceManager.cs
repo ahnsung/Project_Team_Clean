@@ -490,6 +490,42 @@ public class PlayerResourceManager : MonoBehaviour
             maxHunger;
     }
 
+    // =========================================================
+    // Death Recovery
+    // =========================================================
+
+    public void RestoreHealthToMaxForDeath()
+    {
+        /*
+         * 사망 후 로비 복귀용.
+         *
+         * ChangeHealth()를 사용하지 않는다.
+         * 배고픔 / 상태이상에 의한 회복량 감소 효과를
+         * 적용받지 않고 HP만 정확히 최대치로 복구한다.
+         *
+         * Mental / Hunger / lastProcessedTurn은 건드리지 않는다.
+         */
+        ApplyMaxResourceFromStats(false);
+
+        int before =
+            currentHealth;
+
+        currentHealth =
+            maxHealth;
+
+        ClampAll();
+        RefreshStatusResourceConditions();
+        Save();
+
+        Debug.Log(
+            "[Resource] 사망 복귀 HP 회복 완료 " +
+            $"{before} -> {currentHealth}/{maxHealth} " +
+            $"(Mental {currentMental}/{maxMental}, " +
+            $"Hunger {currentHunger}/{maxHunger} 유지)"
+        );
+    }
+
+
     public void ResetResourceToMax()
     {
         ResetForNewGame(true);

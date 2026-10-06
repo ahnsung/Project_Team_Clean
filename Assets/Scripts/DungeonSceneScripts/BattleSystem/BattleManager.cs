@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BattleManager : MonoBehaviour
 {
@@ -87,6 +88,20 @@ public class BattleManager : MonoBehaviour
         BattleState.None;
 
     private bool battleRunning;
+
+    // =========================================================
+    // Encounter Runtime
+    // =========================================================
+    // EncounterManager가 선택한 정확한 Enemy_ID 조합.
+    // null/비어있으면 기존 랜덤 SpawnEnemies()를 사용한다.
+    private int[] pendingEncounterEnemyIds;
+
+    // 현재 전투가 어느 Encounter Group(7000~7005)에서 시작됐는지 보관한다.
+    // -1이면 기획 인카운터 그룹이 지정되지 않은 기존/특수 전투다.
+    private int currentEncounterGroupId = -1;
+
+    public int CurrentEncounterGroupId =>
+        currentEncounterGroupId;
 
     // 적 지정이 필요한 무기 스킬을 선택했을 때 보관한다.
     // null이면 일반 공격 대상 선택 상태다.
@@ -174,8 +189,93 @@ public class BattleManager : MonoBehaviour
 
     public IEnumerator StartBattleEncounter()
     {
+        // 기존 호출 호환용.
+        // 인카운터 조합이 지정되지 않은 전투는 예전 방식으로 생성한다.
+        currentEncounterGroupId = -1;
+
+        yield return StartCoroutine(
+            StartBattleEncounterRoutine(null)
+        );
+    }
+
+    /// <summary>
+    /// EncounterManager가 뽑은 Enemy_ID 조합으로 전투를 시작한다.
+    /// 예: [3001, 3002] -> 감염된 개 + 감염된 쥐
+    /// </summary>
+    public IEnumerator StartBattleEncounter(int[] enemyIds)
+    {
+        // 기존 Encounter 연동 코드 호환용.
+        // Group ID를 아직 전달하지 않는 호출은 -1로 처리한다.
+        yield return StartCoroutine(
+            StartBattleEncounter(
+                -1,
+                enemyIds
+            )
+        );
+    }
+
+    /// <summary>
+    /// Encounter Group ID와 해당 그룹에서 선택된 Enemy_ID 조합으로
+    /// 전투를 시작한다.
+    /// </summary>
+    public IEnumerator StartBattleEncounter(
+        int encounterGroupId,
+        int[] enemyIds)
+    {
+        if (enemyIds == null || enemyIds.Length == 0)
+        {
+            Debug.LogWarning(
+                "[BattleManager] 지정 인카운터 Enemy_ID가 비어 있어 기존 랜덤 생성으로 진행합니다."
+            );
+
+            currentEncounterGroupId = -1;
+
+            yield return StartCoroutine(
+                StartBattleEncounterRoutine(null)
+            );
+
+            yield break;
+        }
+
+        int safeCount =
+            Mathf.Min(
+                enemyIds.Length,
+                3
+            );
+
+        int[] copiedIds =
+            new int[safeCount];
+
+        for (int i = 0; i < safeCount; i++)
+        {
+            copiedIds[i] =
+                enemyIds[i];
+        }
+
+        currentEncounterGroupId =
+            encounterGroupId;
+
+        Debug.Log(
+            "[BattleManager] 인카운터 전투 시작" +
+            " / Group: " +
+            currentEncounterGroupId +
+            " / Enemy IDs: " +
+            string.Join(", ", copiedIds)
+        );
+
+        yield return StartCoroutine(
+            StartBattleEncounterRoutine(copiedIds)
+        );
+    }
+
+    private IEnumerator StartBattleEncounterRoutine(
+        int[] encounterEnemyIds)
+    {
         if (battleRunning)
             yield break;
+
+        pendingEncounterEnemyIds =
+            encounterEnemyIds;
 
         battleRunning = true;
         state = BattleState.None;
@@ -196,7 +296,19 @@ public class BattleManager : MonoBehaviour
         if (encounterPanel != null)
             encounterPanel.SetActive(false);
 
-        SpawnEnemies();
+        if (pendingEncounterEnemyIds != null &&
+            pendingEncounterEnemyIds.Length > 0)
+        {
+            SpawnEnemiesByIds(
+                pendingEncounterEnemyIds
+            );
+        }
+        else
+        {
+            SpawnEnemies();
+        }
+
+        pendingEncounterEnemyIds = null;
 
         if (enemies.Count == 0)
         {
@@ -338,6 +450,24 @@ public class BattleManager : MonoBehaviour
 
             unit.SetupMonster(data);
 
+            // =================================================
+            // 몬스터 표시 이름 한글화
+            // =================================================
+            // 프리팹/ScriptableObject의 영문 이름은 그대로 유지하고,
+            // 실제 전투 중 표시되는 BattleUnit.unitName만
+            // 적 테이블의 Enemy_ID 기준 한글 이름으로 바꾼다.
+            //
+            // 3001 감염된 개
+            // 3002 감염된 쥐
+            // 3003 레이더 도적
+            // 3004 레이더 깡패
+            // 3005 보스
+            unit.unitName =
+                GetKoreanMonsterName(
+                    data.enemyId,
+                    unit.unitName
+                );
+
             StatusEffectController enemyStatusController =
                 enemyObject.GetComponent<StatusEffectController>();
 
@@ -375,6 +505,245 @@ public class BattleManager : MonoBehaviour
             enemyMonsterData[unit] = data;
             enemyPreviousPatternIds[unit] = 0;
         }
+    }
+
+    // =========================================================
+    // 적 테이블 기준 몬스터 한글 표시 이름
+    // =========================================================
+    // 현재 적 테이블에 등록된 Enemy_ID만 변환한다.
+    // 등록되지 않은 ID는 기존 이름을 그대로 사용한다.
+    private string GetKoreanMonsterName(
+        int enemyId,
+        string fallbackName)
+    {
+        switch (enemyId)
+        {
+            case 3001:
+                return "감염된 개";
+
+            case 3002:
+                return "감염된 쥐";
+
+            case 3003:
+                return "레이더 도적";
+
+            case 3004:
+                return "레이더 깡패";
+
+            case 3005:
+                return "보스";
+
+            default:
+                return string.IsNullOrWhiteSpace(fallbackName)
+                    ? "적"
+                    : fallbackName;
+        }
+    }
+
+    /// <summary>
+    /// EncounterMonsterTiles에서 선택된 Enemy_ID 배열 그대로 생성한다.
+    /// </summary>
+    private void SpawnEnemiesByIds(
+        int[] enemyIds)
+    {
+        ClearEnemies();
+
+        if (enemyGroup != null)
+            enemyGroup.gameObject.SetActive(true);
+
+        if (monsterPool == null ||
+            monsterPool.Length == 0)
+        {
+            Debug.LogError(
+                "[BattleManager] Monster Pool이 비어 있습니다. " +
+                "인카운터에 사용하는 3001~3004 BattleMonsterData를 등록해주세요."
+            );
+
+            return;
+        }
+
+        if (enemySpawnPoints == null ||
+            enemySpawnPoints.Length == 0)
+        {
+            Debug.LogError(
+                "[BattleManager] Enemy Spawn Points가 비어 있습니다."
+            );
+
+            return;
+        }
+
+        if (enemyIds == null ||
+            enemyIds.Length == 0)
+        {
+            Debug.LogError(
+                "[BattleManager] SpawnEnemiesByIds에 Enemy_ID가 없습니다."
+            );
+
+            return;
+        }
+
+        int count =
+            Mathf.Min(
+                enemyIds.Length,
+                enemySpawnPoints.Length,
+                3
+            );
+
+        for (int i = 0; i < count; i++)
+        {
+            int enemyId =
+                enemyIds[i];
+
+            BattleMonsterData data =
+                GetMonsterDataByEnemyId(
+                    enemyId
+                );
+
+            if (data == null)
+            {
+                Debug.LogError(
+                    "[BattleManager] Monster Pool에서 Enemy_ID " +
+                    enemyId +
+                    " 데이터를 찾지 못했습니다."
+                );
+
+                continue;
+            }
+
+            if (data.monsterPrefab == null)
+            {
+                Debug.LogError(
+                    "[BattleManager] Enemy_ID " +
+                    enemyId +
+                    "의 Monster Prefab이 없습니다."
+                );
+
+                continue;
+            }
+
+            Transform spawnPoint =
+                enemySpawnPoints[i];
+
+            if (spawnPoint == null)
+            {
+                Debug.LogWarning(
+                    "[BattleManager] Enemy Spawn Point " +
+                    i +
+                    "가 비어 있습니다."
+                );
+
+                continue;
+            }
+
+            SpawnEnemyUnit(
+                data,
+                spawnPoint
+            );
+        }
+
+        Debug.Log(
+            "[BattleManager] 기획 인카운터 몬스터 생성 완료" +
+            " / Enemy IDs: " +
+            string.Join(", ", enemyIds)
+        );
+    }
+
+    /// <summary>
+    /// 지정 BattleMonsterData 1개를 실제 BattleUnit으로 생성한다.
+    /// </summary>
+    private void SpawnEnemyUnit(
+        BattleMonsterData data,
+        Transform spawnPoint)
+    {
+        if (data == null ||
+            data.monsterPrefab == null ||
+            spawnPoint == null)
+        {
+            return;
+        }
+
+        GameObject enemyObject =
+            Instantiate(
+                data.monsterPrefab,
+                spawnPoint.position,
+                Quaternion.identity,
+                enemyGroup
+            );
+
+        BattleUnit unit =
+            enemyObject.GetComponent<BattleUnit>();
+
+        if (unit == null)
+        {
+            unit =
+                enemyObject.AddComponent<BattleUnit>();
+        }
+
+        unit.SetupMonster(data);
+
+        // 기획 Enemy_ID 기준 한글 표시명.
+        unit.unitName =
+            GetKoreanMonsterName(
+                data.enemyId,
+                unit.unitName
+            );
+
+        StatusEffectController enemyStatusController =
+            enemyObject.GetComponent<StatusEffectController>();
+
+        if (enemyStatusController == null)
+        {
+            enemyStatusController =
+                enemyObject.AddComponent<StatusEffectController>();
+        }
+
+        BattleEnemyClick enemyClick =
+            enemyObject.GetComponent<BattleEnemyClick>();
+
+        if (enemyClick == null)
+        {
+            enemyClick =
+                enemyObject.AddComponent<BattleEnemyClick>();
+        }
+
+        enemyClick.enemyUnit = unit;
+        enemyClick.battleManager = this;
+
+        Collider2D collider =
+            enemyObject.GetComponent<Collider2D>();
+
+        if (collider == null)
+        {
+            BoxCollider2D boxCollider =
+                enemyObject.AddComponent<BoxCollider2D>();
+
+            boxCollider.isTrigger = true;
+        }
+
+        enemies.Add(unit);
+
+        enemyMonsterData[unit] = data;
+        enemyPreviousPatternIds[unit] = 0;
+    }
+
+    private BattleMonsterData GetMonsterDataByEnemyId(
+        int enemyId)
+    {
+        if (monsterPool == null)
+            return null;
+
+        foreach (
+            BattleMonsterData data
+            in monsterPool)
+        {
+            if (data == null)
+                continue;
+
+            if (data.enemyId == enemyId)
+                return data;
+        }
+
+        return null;
     }
 
     private BattleMonsterData GetRandomValidMonsterData()
@@ -964,7 +1333,7 @@ public class BattleManager : MonoBehaviour
                     );
             }
 
-            EndBattle();
+            EndBattle(true);
             yield break;
         }
 
@@ -1339,7 +1708,7 @@ public class BattleManager : MonoBehaviour
                     );
             }
 
-            EndBattle();
+            EndBattle(true);
             yield break;
         }
 
@@ -1644,7 +2013,7 @@ public class BattleManager : MonoBehaviour
                     .AddTurn("아이템으로 전투 승리");
             }
 
-            EndBattle();
+            EndBattle(true);
             yield break;
         }
 
@@ -1928,7 +2297,7 @@ public class BattleManager : MonoBehaviour
                     .AddTurn("전투 승리");
             }
 
-            EndBattle();
+            EndBattle(true);
             yield break;
         }
 
@@ -1962,6 +2331,34 @@ public class BattleManager : MonoBehaviour
             playerStatusController.ProcessTiming(
                 StatusEffectTiming.PlayerTeamEnd
             );
+        }
+
+        // 적 자신에게 걸려 있는 상태이상 중에서도
+        // PlayerTeamEnd에 지속시간이 감소하도록 설정된 효과가 있다.
+        // 예: 3004의 돌격으로 적 자신에게 적용되는 2134(받는 데미지 증가).
+        //
+        // 따라서 플레이어 행동이 끝난 시점에는 플레이어뿐 아니라
+        // 살아있는 모든 적의 StatusEffectController에도
+        // PlayerTeamEnd 타이밍을 전달해야 한다.
+        //
+        // 이렇게 하면 2134는:
+        // 돌격으로 적용(1턴) -> 다음 플레이어 턴 동안 유지
+        // -> 플레이어 행동 종료 시 1 -> 0 -> 제거
+        // 순서로 정상 처리된다.
+        foreach (BattleUnit timingEnemy in enemies.ToArray())
+        {
+            if (!IsValidLivingEnemy(timingEnemy))
+                continue;
+
+            StatusEffectController timingEnemyStatusController =
+                GetStatusController(timingEnemy);
+
+            if (timingEnemyStatusController != null)
+            {
+                timingEnemyStatusController.ProcessTiming(
+                    StatusEffectTiming.PlayerTeamEnd
+                );
+            }
         }
 
         BattleUnit[] aliveEnemies =
@@ -2038,7 +2435,12 @@ public class BattleManager : MonoBehaviour
                     selectedPattern.patternName
                 );
 
-                ShowEnemyPatternMessage(
+                // 여러 적이 연속 행동할 때 이전 적의 패턴 문구와
+                // 다음 적의 상태이상/플로팅 텍스트가 겹쳐 보이지 않도록
+                // 현재 행동 중인 적의 패턴 UI를 행동 시작 전에 고정하고,
+                // 해당 적의 패턴 처리가 완전히 끝난 뒤 닫는다.
+                BeginEnemyPatternMessage(
+                    enemy,
                     selectedPattern.patternName
                 );
 
@@ -2050,6 +2452,12 @@ public class BattleManager : MonoBehaviour
                         selectedPattern
                     )
                 );
+
+                EndEnemyPatternMessage();
+
+                // 다음 적의 패턴 UI가 즉시 덮어써지지 않도록
+                // 아주 짧게 화면을 정리한 뒤 다음 적으로 넘어간다.
+                yield return new WaitForSeconds(0.15f);
 
                 // 패턴을 실제로 발동한 뒤에만 진행도를 저장한다.
                 enemyPreviousPatternIds[enemy] =
@@ -2076,10 +2484,10 @@ public class BattleManager : MonoBehaviour
                 );
             }
 
-            if (playerUnit != null &&
-                playerUnit.IsDead)
+            if (PlayerResourceManager.Instance != null &&
+                PlayerResourceManager.Instance.CurrentHealth <= 0)
             {
-                EndBattle();
+                HandlePlayerDeath();
                 yield break;
             }
         }
@@ -2114,10 +2522,10 @@ public class BattleManager : MonoBehaviour
 
         RemoveDeadEnemies();
 
-        if (playerUnit != null &&
-            playerUnit.IsDead)
+        if (PlayerResourceManager.Instance != null &&
+            PlayerResourceManager.Instance.CurrentHealth <= 0)
         {
-            EndBattle();
+            HandlePlayerDeath();
             yield break;
         }
 
@@ -2131,7 +2539,7 @@ public class BattleManager : MonoBehaviour
                     );
             }
 
-            EndBattle();
+            EndBattle(true);
             yield break;
         }
 
@@ -2168,10 +2576,10 @@ public class BattleManager : MonoBehaviour
 
         RemoveDeadEnemies();
 
-        if (playerUnit != null &&
-            playerUnit.IsDead)
+        if (PlayerResourceManager.Instance != null &&
+            PlayerResourceManager.Instance.CurrentHealth <= 0)
         {
-            EndBattle();
+            HandlePlayerDeath();
             yield break;
         }
 
@@ -2185,7 +2593,7 @@ public class BattleManager : MonoBehaviour
                     );
             }
 
-            EndBattle();
+            EndBattle(true);
             yield break;
         }
 
@@ -2197,6 +2605,67 @@ public class BattleManager : MonoBehaviour
     // =========================================================
 
     private Coroutine enemyPatternMessageCoroutine;
+
+    // =========================================================
+    // 다수 적 패턴 표시 동기화
+    //
+    // 기존 ShowEnemyPatternMessage는 별도 Coroutine으로 돌아가므로
+    // 여러 적이 연속 행동할 때 이전 행동의 플로팅 텍스트와
+    // 다음 적의 패턴명이 겹쳐 보일 수 있었다.
+    //
+    // 패턴 실행 루틴에서 Begin -> 실제 행동 -> End 순서로 직접
+    // 제어해서 현재 표시된 패턴명과 실제 행동 주체를 맞춘다.
+    // =========================================================
+    private void BeginEnemyPatternMessage(
+        BattleUnit enemy,
+        string patternName)
+    {
+        if (enemyPatternPanel == null ||
+            enemyPatternText == null)
+        {
+            return;
+        }
+
+        if (enemyPatternMessageCoroutine != null)
+        {
+            StopCoroutine(
+                enemyPatternMessageCoroutine
+            );
+
+            enemyPatternMessageCoroutine = null;
+        }
+
+        string enemyName =
+            enemy != null &&
+            !string.IsNullOrWhiteSpace(enemy.unitName)
+                ? enemy.unitName
+                : "적";
+
+        enemyPatternText.text =
+            enemyName +
+            "이(가) \"" +
+            patternName +
+            "\"을 발동했다.";
+
+        enemyPatternPanel.SetActive(true);
+    }
+
+    private void EndEnemyPatternMessage()
+    {
+        if (enemyPatternMessageCoroutine != null)
+        {
+            StopCoroutine(
+                enemyPatternMessageCoroutine
+            );
+
+            enemyPatternMessageCoroutine = null;
+        }
+
+        if (enemyPatternPanel != null)
+        {
+            enemyPatternPanel.SetActive(false);
+        }
+    }
 
     private void ShowEnemyPatternMessage(string patternName)
     {
@@ -2347,15 +2816,21 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        bool attackAnimationPlayed = false;
+        // 같은 Pattern_ID에 효과 행이 여러 개 있어도
+        // 적의 행동 연출은 한 번만 재생한다.
+        // 예: 5022 자원 강탈 = 배고픔 감소 + 정신력 감소.
+        bool actionVisualPlayed = false;
 
         foreach (EnemyPatternData effect in effects)
         {
             if (effect == null)
                 continue;
 
+            // 패턴 테이블 기준
             // target 0 = 플레이어
-            if (effect.target != 0)
+            // target 1 = 패턴을 사용하는 적 자신
+            if (effect.target != 0 &&
+                effect.target != 1)
             {
                 Debug.LogWarning(
                     "[BattleManager] 아직 지원하지 않는 적 패턴 target: " +
@@ -2369,12 +2844,11 @@ public class BattleManager : MonoBehaviour
 
             switch (effect.effectType)
             {
-                // 5001 기본 공격.
-                // 현재 패턴 테이블에서 기본 공격 행에 사용하는 타입.
+                // 기본 공격
                 case 0:
-                    if (!attackAnimationPlayed)
+                    if (!actionVisualPlayed)
                     {
-                        attackAnimationPlayed = true;
+                        actionVisualPlayed = true;
 
                         yield return StartCoroutine(
                             ExecuteLegacyEnemyAttackRoutine(
@@ -2387,17 +2861,22 @@ public class BattleManager : MonoBehaviour
                     }
                     break;
 
-                // 5003~5005 강화 공격.
-                // Effect_Power 3 / 6 / 12를
-                // 기존 공격력에 더하는 추가 피해값으로 사용한다.
+                // 고정 피해 공격
+                // 패턴 테이블 기준:
+                // Effect_Type 1 = 적의 기본 공격력에 더하는 값이 아니라
+                // Effect_Power 자체를 공격의 기본 피해값으로 사용한다.
+                // 예: 3004 / 5032 돌격 / Effect_Power 30 -> 기본 피해 30.
                 case 1:
-                    if (!attackAnimationPlayed)
+                    if (!actionVisualPlayed)
                     {
-                        attackAnimationPlayed = true;
+                        actionVisualPlayed = true;
 
-                        int bonusDamage =
-                            Mathf.RoundToInt(
-                                effect.effectPower
+                        int fixedDamage =
+                            Mathf.Max(
+                                1,
+                                Mathf.RoundToInt(
+                                    effect.effectPower
+                                )
                             );
 
                         yield return StartCoroutine(
@@ -2405,19 +2884,79 @@ public class BattleManager : MonoBehaviour
                                 enemy,
                                 enemyStatusController,
                                 playerStatusController,
-                                bonusDamage
+                                fixedDamage
                             )
                         );
                     }
                     break;
 
-                // 상태이상 적용.
-                // 현재 5002 위액 뿌리기 -> status 2132 -> target 0.
+                // 현재 배고픔 변화
+                // 3003 / 5022 자원 강탈: Effect_Power -10
+                case 2:
+                    if (!actionVisualPlayed)
+                    {
+                        actionVisualPlayed = true;
+
+                        yield return StartCoroutine(
+                            PlayEnemyPatternActionVisualRoutine(
+                                enemy
+                            )
+                        );
+                    }
+
+                    ApplyEnemyPatternResourceEffect(
+                        effect,
+                        true
+                    );
+                    break;
+
+                // 현재 정신력 변화
+                // 3003 / 5022 자원 강탈: Effect_Power -10
+                case 3:
+                    if (!actionVisualPlayed)
+                    {
+                        actionVisualPlayed = true;
+
+                        yield return StartCoroutine(
+                            PlayEnemyPatternActionVisualRoutine(
+                                enemy
+                            )
+                        );
+                    }
+
+                    ApplyEnemyPatternResourceEffect(
+                        effect,
+                        false
+                    );
+                    break;
+
+                // 상태이상 적용
                 case 17:
+                    if (!actionVisualPlayed)
+                    {
+                        actionVisualPlayed = true;
+
+                        yield return StartCoroutine(
+                            PlayEnemyPatternActionVisualRoutine(
+                                enemy
+                            )
+                        );
+                    }
+
+                    StatusEffectController targetController =
+                        effect.target == 1
+                            ? enemyStatusController
+                            : playerStatusController;
+
+                    BattleUnit targetUnit =
+                        effect.target == 1
+                            ? enemy
+                            : playerUnit;
+
                     yield return StartCoroutine(
                         ApplyEnemyPatternStatusRoutine(
-                            enemy,
-                            playerStatusController,
+                            targetController,
+                            targetUnit,
                             effect
                         )
                     );
@@ -2435,12 +2974,17 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    private IEnumerator ApplyEnemyPatternStatusRoutine(
-        BattleUnit enemy,
-        StatusEffectController playerStatusController,
-        EnemyPatternData effect)
+    // =========================================================
+    // 적 패턴 공통 행동 연출
+    // =========================================================
+    // 공격이 아닌 상태이상/자원 감소 패턴도 적의 행동이므로
+    // 기존 적 공격 컷인을 한 번 사용한다.
+    private IEnumerator PlayEnemyPatternActionVisualRoutine(
+        BattleUnit enemy)
     {
-        // 상태이상 패턴도 적의 행동이므로 기존 공격 컷인을 사용한다.
+        if (enemy == null)
+            yield break;
+
         if (cutInController != null &&
             playerUnit != null)
         {
@@ -2458,14 +3002,86 @@ public class BattleManager : MonoBehaviour
                 enemyAttackDelay
             );
         }
+    }
 
-        if (effect.statusId <= 0)
-            yield break;
+    // =========================================================
+    // 적 패턴 - 배고픔 / 정신력 변화
+    // =========================================================
+    private void ApplyEnemyPatternResourceEffect(
+        EnemyPatternData effect,
+        bool isHunger)
+    {
+        if (effect == null)
+            return;
 
-        if (playerStatusController == null)
+        if (PlayerResourceManager.Instance == null)
         {
             Debug.LogError(
-                "[BattleManager] 플레이어 StatusEffectController가 없습니다."
+                "[BattleManager] PlayerResourceManager가 없습니다." +
+                " / Pattern_ID: " +
+                effect.patternId
+            );
+
+            return;
+        }
+
+        int amount =
+            Mathf.RoundToInt(
+                effect.effectPower
+            );
+
+        if (isHunger)
+        {
+            PlayerResourceManager.Instance
+                .ChangeHunger(
+                    amount,
+                    "적 패턴: " + effect.patternName
+                );
+
+            Debug.Log(
+                "[BattleManager] 적 패턴 배고픔 변화" +
+                " / Pattern: " + effect.patternName +
+                " / 변화량: " + amount
+            );
+        }
+        else
+        {
+            PlayerResourceManager.Instance
+                .ChangeMental(
+                    amount,
+                    "적 패턴: " + effect.patternName
+                );
+
+            Debug.Log(
+                "[BattleManager] 적 패턴 정신력 변화" +
+                " / Pattern: " + effect.patternName +
+                " / 변화량: " + amount
+            );
+        }
+    }
+
+    // =========================================================
+    // 적 패턴 - 상태이상 적용
+    // =========================================================
+    private IEnumerator ApplyEnemyPatternStatusRoutine(
+        StatusEffectController targetStatusController,
+        BattleUnit targetUnit,
+        EnemyPatternData effect)
+    {
+        if (effect == null ||
+            effect.statusId <= 0)
+        {
+            yield break;
+        }
+
+        if (targetStatusController == null)
+        {
+            Debug.LogError(
+                "[BattleManager] 적 패턴 대상 StatusEffectController가 없습니다." +
+                " / Pattern_ID: " +
+                effect.patternId +
+                " / Target: " +
+                effect.target
             );
 
             yield break;
@@ -2497,77 +3113,11 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        // =====================================================
-        // DEBUG - 적 패턴 상태이상 중복 추적
-        // 원인 확인 후 제거해도 되는 로그다.
-        // =====================================================
-        int sameStatusCountBefore = 0;
-
-        foreach (ActiveStatusEffect activeEffect
-                 in playerStatusController.ActiveEffects)
-        {
-            if (activeEffect != null &&
-                activeEffect.Data != null &&
-                activeEffect.Data.id == effect.statusId)
-            {
-                sameStatusCountBefore++;
-            }
-        }
-
-        Debug.Log(
-            "[STATUS DEBUG] 적용 직전" +
-            " / Status ID: " +
-            effect.statusId +
-            " / 이름: " +
-            statusData.buffName +
-            " / Controller GO: " +
-            playerStatusController.gameObject.name +
-            " / Controller InstanceID: " +
-            playerStatusController.GetInstanceID() +
-            " / 동일 ID 개수: " +
-            sameStatusCountBefore
-        );
-
         bool added =
-            playerStatusController
+            targetStatusController
                 .AddStatusEffect(
                     statusData
                 );
-
-        int sameStatusCountAfter = 0;
-        string sameStatusDurations = "";
-
-        foreach (ActiveStatusEffect activeEffect
-                 in playerStatusController.ActiveEffects)
-        {
-            if (activeEffect != null &&
-                activeEffect.Data != null &&
-                activeEffect.Data.id == effect.statusId)
-            {
-                sameStatusCountAfter++;
-
-                if (sameStatusDurations.Length > 0)
-                    sameStatusDurations += ", ";
-
-                sameStatusDurations +=
-                    activeEffect.RemainingDuration.ToString();
-            }
-        }
-
-        Debug.Log(
-            "[STATUS DEBUG] 적용 직후" +
-            " / Status ID: " +
-            effect.statusId +
-            " / Controller GO: " +
-            playerStatusController.gameObject.name +
-            " / Controller InstanceID: " +
-            playerStatusController.GetInstanceID() +
-            " / 동일 ID 개수: " +
-            sameStatusCountAfter +
-            " / 지속시간들: [" +
-            sameStatusDurations +
-            "]"
-        );
 
         Debug.Log(
             "[BattleManager] 적 패턴 상태이상 적용" +
@@ -2575,15 +3125,17 @@ public class BattleManager : MonoBehaviour
             effect.patternName +
             " / Status ID: " +
             effect.statusId +
+            " / Target: " +
+            effect.target +
             " / 성공: " +
             added
         );
 
         if (added &&
-            playerUnit != null)
+            targetUnit != null)
         {
             ShowFloatingText(
-                playerUnit.transform.position,
+                targetUnit.transform.position,
                 statusData.buffName
             );
         }
@@ -2597,12 +3149,18 @@ public class BattleManager : MonoBehaviour
     // 기존 적 공격 처리
     // =========================================================
     // 기존 EnemyTurnRoutine의 공격 계산을 그대로 분리했다.
-    // bonusDamage는 패턴 강화 공격에서만 추가한다.
+    //
+    // fixedDamage <= 0:
+    //   일반 공격. enemy.attackPower를 기본 피해로 사용한다.
+    //
+    // fixedDamage > 0:
+    //   Effect_Type 1 고정 피해 공격.
+    //   enemy.attackPower에 더하지 않고 fixedDamage 자체를 기본 피해로 사용한다.
     private IEnumerator ExecuteLegacyEnemyAttackRoutine(
         BattleUnit enemy,
         StatusEffectController enemyStatusController,
         StatusEffectController playerStatusController,
-        int bonusDamage)
+        int fixedDamage)
     {
         if (enemy == null)
             yield break;
@@ -2694,19 +3252,24 @@ public class BattleManager : MonoBehaviour
 
         if (hit)
         {
+            int baseDamage =
+                fixedDamage > 0
+                    ? fixedDamage
+                    : enemy.attackPower;
+
             int damage =
                 Mathf.Max(
                     1,
-                    enemy.attackPower +
-                    bonusDamage
+                    baseDamage
                 );
 
-            if (bonusDamage != 0)
+            if (fixedDamage > 0)
             {
                 Debug.Log(
-                    "[BattleManager] 강화 공격 추가 피해: +" +
-                    bonusDamage +
-                    " / 기본 공격력: " +
+                    "[BattleManager] Effect_Type 1 고정 피해 공격" +
+                    " / 고정 피해: " +
+                    fixedDamage +
+                    " / 적 기본 공격력: " +
                     enemy.attackPower
                 );
             }
@@ -2728,7 +3291,7 @@ public class BattleManager : MonoBehaviour
 
                 Debug.Log(
                     "[BattleManager] 적 공격력 상태이상: " +
-                    (enemy.attackPower + bonusDamage) +
+                    baseDamage +
                     " x " +
                     attackMultiplier +
                     " = " +
@@ -3249,7 +3812,120 @@ public class BattleManager : MonoBehaviour
         return enemies.Count == 0;
     }
 
-    private void EndBattle()
+    // =========================================================
+    // Player Death - 1차 처리
+    // =========================================================
+    // 플레이어 HP가 0이 된 순간 전투를 즉시 종료 상태로 고정한다.
+    //
+    // 중요:
+    // - 승리 처리(EndBattle(true))를 절대 호출하지 않는다.
+    // - EncounterRewardManager 보상 경로를 타지 않는다.
+    // - battleRunning을 즉시 false로 내려 추가 입력/행동을 막는다.
+    // - 사망 UI / Fade / LobbyScene 이동 / HP만 최대치 복구는
+    //   다음 단계에서 이 메서드에 연결한다.
+    private bool deathSequenceStarted = false;
+
+    private void HandlePlayerDeath()
+    {
+        if (deathSequenceStarted)
+            return;
+
+        deathSequenceStarted = true;
+
+        Debug.Log(
+            "[BattleManager] 플레이어 사망 - 사망 처리 시작"
+        );
+
+        state = BattleState.BattleEnd;
+        battleRunning = false;
+
+        ClearEnemyArrows();
+        HideEnemyPatternMessage();
+
+        pendingTargetWeaponSkill = null;
+        pendingTargetItemId = 0;
+        pendingTargetItemDamage = 0;
+        pendingEncounterEnemyIds = null;
+
+        ignoreNextEnemyHit = false;
+        ignoreAllEnemyHitsThisTurn = false;
+        doubleNextNormalAttackDamage = false;
+        enemyAccuracyModifierThisTurn = 0;
+
+        if (uiManager != null)
+            uiManager.HideBattleUI();
+
+        ClearEnemies();
+
+        if (enemyGroup != null)
+            enemyGroup.gameObject.SetActive(false);
+
+        currentEncounterGroupId = -1;
+
+        StartCoroutine(PlayerDeathRoutine());
+    }
+
+    private IEnumerator PlayerDeathRoutine()
+    {
+        // 기존 전투 발생 안내 패널을 사망 안내에도 재사용한다.
+        if (encounterText != null)
+            encounterText.text = "사망했습니다.";
+
+        if (encounterPanel != null)
+            encounterPanel.SetActive(true);
+
+        yield return new WaitForSecondsRealtime(1.2f);
+
+        FadeController fadeController =
+            FindFirstObjectByType<FadeController>();
+
+        if (fadeController != null)
+            yield return fadeController.FadeOut();
+
+        // 사망 복구는 PlayerResourceManager의 전용 함수를 사용한다.
+        // HP만 최대치로 복구하고 Mental / Hunger는 현재 값을 그대로 유지한다.
+        // ChangeHealth()를 거치지 않으므로 회복량 감소 효과의 영향도 받지 않는다.
+        if (PlayerResourceManager.Instance != null)
+        {
+            PlayerResourceManager.Instance
+                .RestoreHealthToMaxForDeath();
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[BattleManager] PlayerResourceManager.Instance가 없어 " +
+                "사망 HP 복구를 수행하지 못했습니다."
+            );
+        }
+
+        // 사망한 방이 아니라 Base Camp에서 다시 시작하도록
+        // 저장하기 전에 현재 던전 위치를 Base Camp로 변경한다.
+        if (DungeonManager.Instance != null)
+        {
+            DungeonManager.Instance
+                .ResetPositionToBaseCampForDeath();
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[BattleManager] DungeonManager.Instance가 없어 " +
+                "사망 위치를 Base Camp로 변경하지 못했습니다."
+            );
+        }
+
+        // DungeonScene의 Inventory / Equipment가 살아 있는 지금 저장한다.
+        // LobbyScene으로 이동한 뒤 호출하면 SaveGameplayData()가 return할 수 있다.
+        // 현재 위치를 먼저 Base Camp로 바꿨으므로 저장 좌표도 Base Camp가 된다.
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.SaveGameplayData();
+
+        PlayerPrefs.Save();
+
+        SceneManager.LoadScene("LobbyScene");
+    }
+
+    private void EndBattle(
+        bool playerVictory = false)
     {
         if (state == BattleState.BattleEnd)
             return;
@@ -3259,13 +3935,93 @@ public class BattleManager : MonoBehaviour
         ClearEnemyArrows();
 
         StartCoroutine(
-            EndBattleRoutine()
+            EndBattleRoutine(
+                playerVictory
+            )
         );
     }
 
-    private IEnumerator EndBattleRoutine()
+    private IEnumerator EndBattleRoutine(
+        bool playerVictory)
     {
         yield return new WaitForSeconds(1f);
+
+        // =====================================================
+        // Encounter Victory Reward Roll
+        // =====================================================
+        // 도주/플레이어 사망에는 playerVictory가 false이므로
+        // 절대로 전투 보상을 뽑지 않는다.
+        if (
+            playerVictory &&
+            currentEncounterGroupId >= 0
+        )
+        {
+            EncounterRewardManager rewardManager =
+                EncounterRewardManager.Instance;
+
+            if (rewardManager == null)
+            {
+                rewardManager =
+                    FindFirstObjectByType<
+                        EncounterRewardManager
+                    >();
+            }
+
+            if (rewardManager == null)
+            {
+                Debug.LogWarning(
+                    "[BattleManager] 전투에는 승리했지만 " +
+                    "EncounterRewardManager를 찾을 수 없습니다."
+                );
+            }
+            else if (
+                rewardManager.TryRollReward(
+                    currentEncounterGroupId,
+                    out int rewardItemId
+                )
+            )
+            {
+                Debug.Log(
+                    "[BattleManager] 전투 승리 보상 추첨 완료" +
+                    " / Group: " +
+                    currentEncounterGroupId +
+                    " / Item ID: " +
+                    rewardItemId
+                );
+
+                // =================================================
+                // Battle Reward UI
+                // =================================================
+                // 보상 선택이 끝날 때까지 전투 종료 처리를 멈춘다.
+                BattleRewardManager battleRewardManager =
+                    BattleRewardManager.Instance;
+
+                if (battleRewardManager == null)
+                {
+                    battleRewardManager =
+                        FindFirstObjectByType<
+                            BattleRewardManager
+                        >();
+                }
+
+                if (battleRewardManager == null)
+                {
+                    Debug.LogWarning(
+                        "[BattleManager] BattleRewardManager를 찾을 수 없습니다. " +
+                        "보상 UI를 표시하지 않고 전투를 종료합니다."
+                    );
+                }
+                else
+                {
+                    yield return StartCoroutine(
+                        battleRewardManager
+                            .ShowBattleReward(
+                                rewardItemId
+                            )
+                    );
+                }
+            }
+        }
 
         ClearEnemies();
 
@@ -3278,6 +4034,7 @@ public class BattleManager : MonoBehaviour
         pendingTargetWeaponSkill = null;
         state = BattleState.None;
         battleRunning = false;
+        currentEncounterGroupId = -1;
     }
 
     private void EndBattleImmediately()
@@ -3293,6 +4050,7 @@ public class BattleManager : MonoBehaviour
         pendingTargetWeaponSkill = null;
         state = BattleState.None;
         battleRunning = false;
+        currentEncounterGroupId = -1;
     }
 
     private void ClearEnemyArrows()

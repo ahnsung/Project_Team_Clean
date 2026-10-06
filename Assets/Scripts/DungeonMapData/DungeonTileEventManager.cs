@@ -47,6 +47,23 @@ public class DungeonTileEventManager : MonoBehaviour
 
 
     // =========================================================
+    // Boss Battle Background
+    // =========================================================
+
+    [Header("Boss Battle Background")]
+
+    [Tooltip("기존 일반 배경 오브젝트 5개를 순서대로 연결합니다.")]
+    [SerializeField]
+    private GameObject[] normalBackgrounds;
+
+    [Tooltip("보스 전용 배경 오브젝트 5개를 순서대로 연결합니다.")]
+    [SerializeField]
+    private GameObject[] bossBackgrounds;
+
+    private bool[] savedNormalBackgroundStates;
+
+
+    // =========================================================
     // General Battle
     // =========================================================
 
@@ -225,6 +242,16 @@ public class DungeonTileEventManager : MonoBehaviour
                 break;
 
 
+            case DungeonTileType.Boss:
+
+                yield return
+                    HandleBoss(
+                        tile
+                    );
+
+                break;
+
+
             default:
 
                 break;
@@ -326,16 +353,6 @@ public class DungeonTileEventManager : MonoBehaviour
                 break;
 
 
-            case DungeonTileType.Boss:
-
-                yield return
-                    HandleBoss(
-                        tile
-                    );
-
-                break;
-
-
             default:
 
                 Debug.Log(
@@ -382,7 +399,6 @@ public class DungeonTileEventManager : MonoBehaviour
             case DungeonTileType.PuzzleLetter:
             case DungeonTileType.EventHint:
             case DungeonTileType.Rest:
-            case DungeonTileType.Boss:
 
                 return true;
 
@@ -517,12 +533,80 @@ public class DungeonTileEventManager : MonoBehaviour
         );
 
 
+        // =====================================================
+        // Encounter Table
+        // =====================================================
+        // 전투 발생 확률 판정은 위의 기존 General 로직을 그대로 사용한다.
+        // 여기서는 전투가 발생하기로 결정된 뒤,
+        // 현재 좌표에 맞는 Encounter Group / 몬스터 조합만 선택한다.
+
+        EncounterManager encounterManager =
+            EncounterManager.Instance;
+
+        if (encounterManager == null)
+        {
+            encounterManager =
+                FindFirstObjectByType<
+                    EncounterManager
+                >();
+        }
+
+
+        if (encounterManager == null)
+        {
+            Debug.LogError(
+                "[General] EncounterManager를 찾을 수 없습니다.\n" +
+                "씬에 EncounterManager 컴포넌트를 추가해주세요."
+            );
+
+            yield break;
+        }
+
+
+        Vector2Int encounterPosition =
+            new Vector2Int(
+                tile.X,
+                tile.Y
+            );
+
+
+        if (
+            !encounterManager.TryRollEncounter(
+                encounterPosition,
+                out int encounterGroupId,
+                out int[] encounterEnemyIds
+            )
+        )
+        {
+            Debug.LogWarning(
+                "[General] 현재 좌표의 인카운터 몬스터 조합을 " +
+                "선택하지 못했습니다.\n" +
+                $"좌표: {encounterPosition}"
+            );
+
+            yield break;
+        }
+
+
+        Debug.Log(
+            "[General] 인카운터 테이블 선택 완료\n" +
+            $"좌표: {encounterPosition}\n" +
+            $"Encounter Group: {encounterGroupId}\n" +
+            $"Enemy IDs: {string.Join(", ", encounterEnemyIds)}"
+        );
+
+
+        // 몬스터 조합까지 정상적으로 정해진 뒤에만
+        // 누적 전투 확률을 초기값으로 되돌린다.
         ResetGeneralBattleChance();
 
 
         yield return StartCoroutine(
             battleManager
-                .StartBattleEncounter()
+                .StartBattleEncounter(
+                    encounterGroupId,
+                    encounterEnemyIds
+                )
         );
 
 
@@ -1772,13 +1856,168 @@ public class DungeonTileEventManager : MonoBehaviour
     private IEnumerator HandleBoss(
         DungeonTileData tile)
     {
+        ResolveReferences();
+
+        if (tile == null)
+        {
+            Debug.LogWarning(
+                "[Boss] Boss 타일 데이터가 없습니다."
+            );
+
+            yield break;
+        }
+
+        if (battleManager == null)
+        {
+            Debug.LogError(
+                "[Boss] BattleManager를 찾을 수 없습니다."
+            );
+
+            yield break;
+        }
+
+        // 현재 기획 기준: (15, 31)에서 Enemy 3005 보스전
+        if (tile.X != 15 || tile.Y != 31)
+        {
+            Debug.LogWarning(
+                "[Boss] 등록되지 않은 Boss 타일입니다.\n" +
+                $"좌표: ({tile.X}, {tile.Y})"
+            );
+
+            yield break;
+        }
+
+        if (battleManager.IsBattleRunning())
+        {
+            Debug.LogWarning(
+                "[Boss] 이미 전투가 진행 중입니다."
+            );
+
+            yield break;
+        }
+
+        int[] bossEnemyIds =
+            new int[] { 3005 };
+
         Debug.Log(
-            "[Boss] 구현 예정: " +
-            $"({tile.X}, {tile.Y})"
+            "[Boss] 보스 전투 시작\n" +
+            $"좌표: ({tile.X}, {tile.Y})\n" +
+            "Enemy ID: 3005"
         );
 
+        // 보스전 직전 일반 배경의 현재 활성 상태를 저장한 뒤
+        // 일반 배경은 끄고 보스 전용 배경을 켠다.
+        ShowBossBattleBackground();
 
-        yield break;
+        // Encounter Group을 넘기지 않으므로
+        // 일반 인카운터 보상 그룹과 분리된 보스 전투로 시작한다.
+        yield return StartCoroutine(
+            battleManager.StartBattleEncounter(
+                bossEnemyIds
+            )
+        );
+
+        while (battleManager.IsBattleRunning())
+        {
+            yield return null;
+        }
+
+        // 보스전이 완전히 끝난 뒤 보스 배경을 끄고
+        // 전투 시작 전의 일반 배경 활성 상태를 그대로 복구한다.
+        RestoreNormalBackground();
+
+        Debug.Log(
+            "[Boss] 보스 전투 종료\n" +
+            $"좌표: ({tile.X}, {tile.Y})"
+        );
+    }
+
+
+    private void ShowBossBattleBackground()
+    {
+        if (normalBackgrounds != null)
+        {
+            savedNormalBackgroundStates =
+                new bool[normalBackgrounds.Length];
+
+            for (int i = 0; i < normalBackgrounds.Length; i++)
+            {
+                GameObject background =
+                    normalBackgrounds[i];
+
+                if (background == null)
+                {
+                    savedNormalBackgroundStates[i] = false;
+                    continue;
+                }
+
+                savedNormalBackgroundStates[i] =
+                    background.activeSelf;
+
+                background.SetActive(false);
+            }
+        }
+
+        if (bossBackgrounds != null)
+        {
+            for (int i = 0; i < bossBackgrounds.Length; i++)
+            {
+                if (bossBackgrounds[i] != null)
+                {
+                    bossBackgrounds[i]
+                        .SetActive(true);
+                }
+            }
+        }
+
+        Debug.Log(
+            "[Boss] 보스 전용 배경 ON"
+        );
+    }
+
+
+    private void RestoreNormalBackground()
+    {
+        if (bossBackgrounds != null)
+        {
+            for (int i = 0; i < bossBackgrounds.Length; i++)
+            {
+                if (bossBackgrounds[i] != null)
+                {
+                    bossBackgrounds[i]
+                        .SetActive(false);
+                }
+            }
+        }
+
+        if (
+            normalBackgrounds != null &&
+            savedNormalBackgroundStates != null
+        )
+        {
+            int count =
+                Mathf.Min(
+                    normalBackgrounds.Length,
+                    savedNormalBackgroundStates.Length
+                );
+
+            for (int i = 0; i < count; i++)
+            {
+                if (normalBackgrounds[i] != null)
+                {
+                    normalBackgrounds[i]
+                        .SetActive(
+                            savedNormalBackgroundStates[i]
+                        );
+                }
+            }
+        }
+
+        savedNormalBackgroundStates = null;
+
+        Debug.Log(
+            "[Boss] 일반 배경 상태 복구"
+        );
     }
 
 
